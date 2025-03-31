@@ -1,8 +1,7 @@
 use once_cell::sync::OnceCell;
 use tauri::tray::TrayIconBuilder;
 use tauri::{
-    menu::{CheckMenuItem, IsMenuItem, MenuEvent, MenuItem, PredefinedMenuItem, Submenu},
-    tray::{MouseButton, MouseButtonState, TrayIconEvent},
+    menu::MenuEvent,
     App, AppHandle,
 };
 use anyhow::Result;

@@ -114,12 +114,16 @@ pub async fn resolve_setup(app: &mut App) {
     // log::trace!(target: "app", "Initial system tray");
     // logging_error!(Type::Tray, true, tray::Tray::global().init());
     // logging_error!(Type::Tray, true, tray::Tray::global().create_systray(app));
-    if let Err(e) = tray::Tray::global().init(){
-        panic!("app failed to init tray:{}",e);
-    };
-    if let Err(e) = tray::Tray::global().create_systray(app){
-        panic!("app failed to create systray:{}",e);
-    };
+    #[cfg(desktop)]
+    {
+        if let Err(e) = tray::Tray::global().init(){
+            panic!("app failed to init tray:{}",e);
+        };
+        if let Err(e) = tray::Tray::global().create_systray(app){
+            panic!("app failed to create systray:{}",e);
+        };
+    }
+
     // logging_error!(
     //     Type::System,
     //     true,
@@ -138,7 +142,7 @@ pub async fn resolve_setup(app: &mut App) {
     // let silent_start = { Config::verge().data().enable_silent_start };
     // if true {
         create_window();
-// }
+    // }
 
     // logging_error!(Type::Tray, true, tray::Tray::global().update_part());
     // logging_error!(Type::System, true, timer::Timer::global().init());

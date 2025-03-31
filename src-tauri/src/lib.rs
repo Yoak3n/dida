@@ -1,7 +1,7 @@
 mod core;
 mod utils;
 mod feat;
-
+mod config;
 
 use std::sync::{Mutex, Once};
 
