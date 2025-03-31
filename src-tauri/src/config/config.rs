@@ -4,6 +4,7 @@ use super::{
     draft::Draft,
     setup::ISetup,
 };
+use crate::utils::{dirs, help};
 use std::path::PathBuf;
 pub struct Config {
     setup_config: Draft<ISetup>,
@@ -13,7 +14,7 @@ impl Config {
     pub fn global()->&'static Self {
         static COONFIG: OnceCell<Config> = OnceCell::new();
         COONFIG.get_or_init(|| Config {
-            setup_config: Draft::from(ISetup::default()),
+            setup_config: Draft::from(ISetup::new()),
         })
     }
 
@@ -96,16 +97,19 @@ impl Config {
     //     Ok(())
     // }
 
+
+    // 生成正在使用的配置文件，暂不需要
+    #[allow(dead_code)]
     pub fn generate_file(typ: ConfigType) -> Result<PathBuf> {
         let path = match typ {
             ConfigType::Run => dirs::app_home_dir()?.join(CONFIG_FILE),
-            ConfigType::Check => dirs::app_home_dir()?.join(CHECK_CONFIG),
+            ConfigType::Check => dirs::app_home_dir()?.join(""),
         };
 
-        let runtime = Config::runtime();
+        let runtime = Config::setup_config();
         let runtime = runtime.latest();
         let config = runtime
-            .config
+            .app_log_level
             .as_ref()
             .ok_or(anyhow!("failed to get runtime config"))?;
 

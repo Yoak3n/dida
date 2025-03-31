@@ -1,11 +1,11 @@
-use std::{fs, path::PathBuf};
+use std::path::PathBuf;
 
 use once_cell::sync::OnceCell;
 use anyhow::Result;
 
 use crate::core::handle;
 
-pub static CLASH_CONFIG: &str = "config.yaml";
+pub static SETUP_CONFIG: &str = "config.yaml";
 pub static PORTABLE_FLAG: OnceCell<bool> = OnceCell::new();
 
 pub fn init_portable_flag() -> Result<()> {
@@ -23,24 +23,25 @@ pub fn init_portable_flag() -> Result<()> {
     Ok(())
 }
 pub fn app_home_dir() -> Result<PathBuf> {
-    use tauri::utils::platform::current_exe;
+    use std::env::current_exe;
+    let exe_path = current_exe()?;
+    let install_dir = if cfg!(target_os = "macos") {
+        // macOS: 可执行文件位于 .app/Contents/MacOS/ 下
+        exe_path
+            .parent() // MacOS 目录
+            .and_then(|p| p.parent()) // Contents 目录
+            .and_then(|p| p.parent()) // .app 目录
+            .unwrap()
+            .to_path_buf()
+    } else {
+        // Windows 和 Linux: 可执行文件在安装目录的子目录或根目录
+        exe_path
+    };
+    Ok(install_dir)
+}
 
-    let flag = PORTABLE_FLAG.get().unwrap_or(&false);
-    if *flag {
-        let app_exe = current_exe()?;
-        let app_exe = dunce::canonicalize(app_exe)?;
-        let app_dir = app_exe
-            .parent()
-            .ok_or(anyhow::anyhow!("failed to get the portable app dir"))?;
-        return Ok(PathBuf::from(app_dir).join(".config").join(APP_ID));
-    }
-    let app_handle = handle::Handle::global().app_handle().unwrap();
+pub fn config_path() -> Result<PathBuf> {
+    Ok(app_home_dir()?
+        .join(SETUP_CONFIG))
 
-    match app_handle.path().data_dir() {
-        Ok(dir) => Ok(dir.join(APP_ID)),
-        Err(e) => {
-            log::error!(target:"app", "Failed to get the app home directory: {}", e);
-            Err(anyhow::anyhow!("Failed to get the app homedirectory"))
-        }
-    }
 }
