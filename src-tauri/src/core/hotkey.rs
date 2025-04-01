@@ -14,7 +14,7 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, ShortcutState};
 pub struct Hotkey {
     current: Arc<Mutex<Vec<String>>>, // 保存当前的热键设置
 }
-
+#[cfg(desktop)]
 impl Hotkey {
     pub fn global() -> &'static Hotkey {
         static HOTKEY: OnceCell<Hotkey> = OnceCell::new();

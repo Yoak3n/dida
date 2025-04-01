@@ -4,55 +4,68 @@ use tauri::{App, Manager};
 use crate::{
     config::config::Config,
     utils::logging::Type,
-    core::{handle, tray,hotkey},
-     logging,logging_error
+    core::handle,
+    logging,logging_error
 };
-
+#[cfg(desktop)]
+use crate::core::{tray,hotkey};
 pub static VERSION: OnceCell<String> = OnceCell::new();
 pub fn create_window() {
-    // logging!(info, Type::Window, true, "Creating window");
-    println!("Creating window");
+    logging!(info, Type::Window, true, "Creating window");
     let app_handle = handle::Handle::global().app_handle().unwrap();
-    if let Some(window) = handle::Handle::global().get_window() {
-        logging!(
-            info,
-            Type::Window,
-            true,
-            "Found existing window, attempting to restore visibility"
-        );
-        // println!("Found existing window, attempting to restore visibility");
-
-        if window.is_minimized().unwrap_or(false) {
+    #[cfg(desktop)]
+    {
+        if let Some(window) = handle::Handle::global().get_window() {
             logging!(
                 info,
                 Type::Window,
                 true,
-                "Window is minimized, restoring window state"
+                "Found existing window, attempting to restore visibility"
             );
-            let _ = window.unminimize();
+    
+            if window.is_minimized().unwrap_or(false) {
+                logging!(
+                    info,
+                    Type::Window,
+                    true,
+                    "Window is minimized, restoring window state"
+                );
+                let _ = window.unminimize();
+            }
+            let _ = window.show();
+            let _ = window.set_focus();
+            return;
         }
-        let _ = window.show();
-        let _ = window.set_focus();
-        return;
+    
+        logging!(info, Type::Window, true, "Creating new application window");
+    
+        #[cfg(target_os = "windows")]
+        let _ = tauri::WebviewWindowBuilder::new(
+                    &app_handle,
+                    "main".to_string(),
+                    tauri::WebviewUrl::App("index.html".into()),
+                )
+                .title("dida")
+                .inner_size(890.0, 700.0)
+                .min_inner_size(620.0, 550.0)
+                .decorations(false)
+                .maximizable(true)
+                .additional_browser_args("--enable-features=msWebView2EnableDraggableRegions --disable-features=OverscrollHistoryNavigation,msExperimentalScrolling")
+                .transparent(true)
+                .shadow(true)
+                .build();
     }
-
-    logging!(info, Type::Window, true, "Creating new application window");
-
-    #[cfg(target_os = "windows")]
-    let _ = tauri::WebviewWindowBuilder::new(
-                &app_handle,
-                "main".to_string(),
-                tauri::WebviewUrl::App("index.html".into()),
-            )
-            .title("dida")
-            .inner_size(890.0, 700.0)
-            .min_inner_size(620.0, 550.0)
-            .decorations(false)
-            .maximizable(true)
-            .additional_browser_args("--enable-features=msWebView2EnableDraggableRegions --disable-features=OverscrollHistoryNavigation,msExperimentalScrolling")
-            .transparent(true)
-            .shadow(true)
+    #[cfg(mobile)]
+    {
+        println!("android");
+        logging!(info, Type::Window, true, "Creating new application window");
+        let _ = tauri::WebviewWindowBuilder::new(
+            &app_handle,
+            "main".to_string(),
+            tauri::WebviewUrl::App("index.html".into()),
+        )
             .build();
+    }
 }
 
 /// handle something when start app
@@ -67,7 +80,9 @@ pub async fn resolve_setup(app: &mut App) {
 
     handle::Handle::global().init(app.app_handle());
     VERSION.get_or_init(|| version.clone());
-
+    
+    #[cfg(mobile)]
+    create_window();   
     // // 启动核心
     logging!(trace, Type::Config, true, "Initial config");
     logging_error!(Type::Config, true, Config::init_config().await);
@@ -107,33 +122,29 @@ pub async fn resolve_setup(app: &mut App) {
     // // setup a simple http server for singleton
     // log::trace!(target: "app", "launch embed server");
     // server::embed_server();
+
+
     #[cfg(desktop)]
     {
         log::trace!(target: "app", "Initial system tray");
         logging_error!(Type::Tray, true, tray::Tray::global().init());
         logging_error!(Type::Tray, true, tray::Tray::global().create_systray(app));
-    }
-    // {
-    //     if let Err(e) = tray::Tray::global().init() {
-    //         panic!("app failed to init tray:{}", e);
-    //     };
-    //     if let Err(e) = tray::Tray::global().create_systray(app) {
-    //         panic!("app failed to create systray:{}", e);
-    //     };
-    // }
-
-
-    // 初始化热键
-    logging!(trace, Type::System, true, "Initial hotkeys");
-    logging_error!(Type::System, true, hotkey::Hotkey::global().init());
-
-    if let Some(silent_start) = { Config::setup_config().data().silent_start } {
-        if !silent_start {
+            // 初始化热键
+        logging!(trace, Type::System, true, "Initial hotkeys");
+        logging_error!(Type::System, true, hotkey::Hotkey::global().init());
+        logging!(info, Type::Window, true, "Creating window preview");
+        if let Some(silent_start) = { Config::setup_config().data().silent_start } {
+            if !silent_start {
+                create_window();
+            }
+        } else {
             create_window();
         }
-    } else {
-        create_window();
     }
+
+
+
+    #[cfg(desktop)]
     logging_error!(Type::Tray, true, tray::Tray::global().update_part());
     // logging_error!(Type::System, true, timer::Timer::global().init());
 

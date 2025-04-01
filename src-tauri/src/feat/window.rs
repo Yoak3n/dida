@@ -1,5 +1,6 @@
 use crate::core::handle;
 
+#[cfg(desktop)]
 pub fn quit(code: Option<i32>) {
     // log::debug!(target: "app", "启动退出流程");
     println!("启动退出流程");

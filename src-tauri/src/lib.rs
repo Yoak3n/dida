@@ -7,11 +7,14 @@ use std::sync::{Mutex, Once};
 
 use config::config::Config;
 use tauri::AppHandle;
+#[cfg(desktop)]
 use tauri_plugin_notification::NotificationExt;
+#[cfg(desktop)]
 use tauri_plugin_single_instance;
 
 // use utils::logging::Type;
 use utils::resolve;
+#[cfg(desktop)]
 use core::hotkey;
 
 pub struct AppHandleManager {
@@ -77,6 +80,7 @@ impl AppHandleManager {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(desktop)]
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
@@ -94,9 +98,20 @@ pub fn run() {
                 resolve::resolve_setup(app).await;
             });
             Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![]);
+        });
+
+    #[cfg(mobile)]
+    let builder = tauri::Builder::default()
+       .plugin(tauri_plugin_notification::init())
+       .plugin(tauri_plugin_opener::init())
+       .setup(|app| {
+            tauri::async_runtime::block_on(async move {
+                resolve::resolve_setup(app).await;
+            });
+            Ok(())
+        });
     let app = builder
+        .invoke_handler(tauri::generate_handler![])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
     app.run(|app_handle, e| match e {
@@ -127,6 +142,7 @@ pub fn run() {
                 api.prevent_exit();
             }
         }
+        #[cfg(desktop)]
         tauri::RunEvent::WindowEvent { label, event, .. } => {
             if label == "main" {
                 match event {
