@@ -1,4 +1,7 @@
-use crate::utils::{dirs, help};
+use crate::{
+    logging, 
+    utils::{dirs, help,logging::Type}
+};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +25,7 @@ impl ISetup {
 
     pub fn template() -> Self {
         // 默认配置
-        println!("配置文件不存在，使用默认配置");
+        logging!(info, Type::Window, true, "The file doesn't exsist,Using default config");
         Self {
             app_log_level: Some("info".to_string()),
             language: Some("zh-CN".to_string()),

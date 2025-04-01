@@ -134,11 +134,7 @@ pub async fn resolve_setup(app: &mut App) {
     } else {
         create_window();
     }
-    // logging_error!(Type::Tray, true, tray::Tray::global().update_part());
+    logging_error!(Type::Tray, true, tray::Tray::global().update_part());
     // logging_error!(Type::System, true, timer::Timer::global().init());
 
-    // let enable_auto_light_weight_mode = { Config::verge().data().enable_auto_light_weight_mode };
-    // if enable_auto_light_weight_mode.unwrap_or(false) {
-    //     lightweight::enable_auto_light_weight_mode();
-    // }
 }

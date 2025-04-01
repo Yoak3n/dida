@@ -50,6 +50,20 @@ impl Tray {
         )?));
         Ok(())
     }
+    
+    pub fn update_tooltip(&self) -> Result<()> {
+        let app_handle = handle::Handle::global().app_handle().unwrap();
+
+        let tray = app_handle.tray_by_id("main").unwrap(); 
+        tray.set_tooltip(Some("Dida"))?;
+        Ok(())
+    }
+
+    pub fn update_part(&self) -> Result<()> {
+        self.update_menu()?;
+        self.update_tooltip()?;
+        Ok(())
+    }
 
     pub fn create_systray(&self, app: &App) -> Result<()> {
         let builder = TrayIconBuilder::with_id("main")
