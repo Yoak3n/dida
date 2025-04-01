@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Result;
 use once_cell::sync::OnceCell;
 
-use crate::core::handle;
+// use crate::core::handle;
 
 pub static SETUP_CONFIG: &str = "config.yaml";
 pub static PORTABLE_FLAG: OnceCell<bool> = OnceCell::new();
@@ -35,11 +35,19 @@ pub fn app_home_dir() -> Result<PathBuf> {
             .to_path_buf()
     } else {
         // Windows 和 Linux: 可执行文件在安装目录的子目录或根目录
-        exe_path
+        exe_path.parent().unwrap().to_path_buf()
     };
     Ok(install_dir)
 }
 
 pub fn config_path() -> Result<PathBuf> {
     Ok(app_home_dir()?.join(SETUP_CONFIG))
+}
+
+pub fn path_to_str(path: &PathBuf) -> Result<&str> {
+    let path_str = path
+        .as_os_str()
+        .to_str()
+        .ok_or(anyhow::anyhow!("failed to get path from {:?}", path))?;
+    Ok(path_str)
 }

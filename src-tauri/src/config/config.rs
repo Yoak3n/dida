@@ -1,12 +1,21 @@
-use super::{draft::Draft, setup::ISetup};
-use crate::utils::{dirs, help};
-use anyhow::{anyhow, Result};
-use once_cell::sync::OnceCell;
 use std::path::PathBuf;
+
+use anyhow::Result;
+use once_cell::sync::OnceCell;
+use tokio::time::{sleep, Duration};
+
+use super::{draft::Draft, setup::ISetup};
+use crate::{
+    utils::{dirs, help,logging::Type},
+    core::{CoreManager,handle},
+    logging
+};
+
 pub struct Config {
     setup_config: Draft<ISetup>,
 }
 pub const CONFIG_FILE: &str = "config.yaml";
+pub const CONFIG_TEST_FILE_PATH: &str = "config.test.yaml";
 impl Config {
     pub fn global() -> &'static Self {
         static CONFIG: OnceCell<Config> = OnceCell::new();
@@ -20,23 +29,7 @@ impl Config {
     }
 
     pub async fn init_config() -> Result<()> {
-    //     if Self::profiles()
-    //         .data()
-    //         .get_item(&"Merge".to_string())
-    //         .is_err()
-    //     {
-    //         let merge_item = PrfItem::from_merge(Some("Merge".to_string()))?;
-    //         Self::profiles().data().append_item(merge_item.clone())?;
-    //     }
-    //     if Self::profiles()
-    //         .data()
-    //         .get_item(&"Script".to_string())
-    //         .is_err()
-    //     {
-    //         let script_item = PrfItem::from_script(Some("Script".to_string()))?;
-    //         Self::profiles().data().append_item(script_item.clone())?;
-    //     }
-    //     // 生成运行时配置
+        // 生成运行时配置
         if let Err(err) = Self::generate().await {
             logging!(error, Type::Config, true, "生成运行时配置失败: {}", err);
         } else {
@@ -45,72 +38,71 @@ impl Config {
 
         // 生成运行时配置文件并验证
         let config_result = Self::generate_file(ConfigType::Run);
+        let validation_result = if config_result.is_ok() {
 
-    //     let validation_result = if config_result.is_ok() {
-    //         // 验证配置文件
-    //         logging!(info, Type::Config, true, "开始验证配置");
-
-    //         match CoreManager::global().validate_config().await {
-    //             Ok((is_valid, error_msg)) => {
-    //                 if !is_valid {
-    //                     logging!(
-    //                         warn,
-    //                         Type::Config,
-    //                         true,
-    //                         "[首次启动] 配置验证失败，使用默认最小配置启动: {}",
-    //                         error_msg
-    //                     );
-    //                     CoreManager::global()
-    //                         .use_default_config("config_validate::boot_error", &error_msg)
-    //                         .await?;
-    //                     Some(("config_validate::boot_error", error_msg))
-    //                 } else {
-    //                     logging!(info, Type::Config, true, "配置验证成功");
-    //                     Some(("config_validate::success", String::new()))
-    //                 }
-    //             }
-    //             Err(err) => {
-    //                 logging!(warn, Type::Config, true, "验证进程执行失败: {}", err);
-    //                 CoreManager::global()
-    //                     .use_default_config("config_validate::process_terminated", "")
-    //                     .await?;
-    //                 Some(("config_validate::process_terminated", String::new()))
-    //             }
-    //         }
-    //     } else {
-    //         logging!(warn, Type::Config, true, "生成配置文件失败，使用默认配置");
-    //         CoreManager::global()
-    //             .use_default_config("config_validate::error", "")
-    //             .await?;
-    //         Some(("config_validate::error", String::new()))
-    //     };
-    //     if let Some((msg_type, msg_content)) = validation_result {
-    //         tauri::async_runtime::spawn(async move {
-    //             sleep(Duration::from_secs(2)).await;
-    //             handle::Handle::notice_message(msg_type, &msg_content);
-    //         });
-    //     }
+            // 验证配置文件
+            logging!(info, Type::Config, true, "开始验证配置");
+            match CoreManager::global().validate_config().await {
+                Ok((is_valid, error_msg)) => {
+                    if !is_valid {
+                        logging!(
+                            warn,
+                            Type::Config,
+                            true,
+                            "[首次启动] 配置验证失败，使用默认最小配置启动: {}",
+                            error_msg
+                        );
+                        CoreManager::global()
+                            .use_default_config("config_validate::boot_error", &error_msg)
+                            .await?;
+                        Some(("config_validate::boot_error", error_msg))
+                    } else {
+                        logging!(info, Type::Config, true, "配置验证成功");
+                        Some(("config_validate::success", String::new()))
+                    }
+                }
+                Err(err) => {
+                    logging!(warn, Type::Config, true, "验证进程执行失败: {}", err);
+                    CoreManager::global()
+                        .use_default_config("config_validate::process_terminated", "")
+                        .await?;
+                    Some(("config_validate::process_terminated", String::new()))
+                }
+            }
+        } else {
+            logging!(warn, Type::Config, true, "生成配置文件失败，使用默认配置");
+            CoreManager::global()
+                .use_default_config("config_validate::error", "")
+                .await?;
+            Some(("config_validate::error", String::new()))
+        };
+        if let Some((msg_type, msg_content)) = validation_result {
+            tauri::async_runtime::spawn(async move {
+                sleep(Duration::from_secs(2)).await;
+                handle::Handle::notice_message(msg_type, &msg_content);
+            });
+        }
 
         Ok(())
     }
 
-    // 生成正在使用的配置文件，暂不需要
-    #[allow(dead_code)]
+    // 生成正在使用的配置文件
     pub fn generate_file(typ: ConfigType) -> Result<PathBuf> {
         let path = match typ {
             ConfigType::Run => dirs::app_home_dir()?.join(CONFIG_FILE),
-            ConfigType::Check => dirs::app_home_dir()?.join(""),
+            ConfigType::Check => dirs::app_home_dir()?.join(CONFIG_TEST_FILE_PATH),
         };
 
-        let runtime = Config::setup_config();
-        let runtime = runtime.latest();
-        let config = runtime
-            .app_log_level
-            .as_ref()
-            .ok_or(anyhow!("failed to get runtime config"))?;
+        let setup = Config::setup_config();
+        let setup = setup.latest();
+        let config = setup.clone();
 
-        help::save_yaml(&path, &config, Some("# Generated by Clash Verge"))?;
+        help::save_yaml(&path, &config, Some("# Generated by Dida"))?;
         Ok(path)
+    }
+    // 生成正在使用的配置文件，暂不需要
+    pub async fn generate() -> Result<()> {
+        Ok(())
     }
 }
 

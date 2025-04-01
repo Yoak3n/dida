@@ -4,7 +4,8 @@ use tauri::{App, Manager};
 use crate::{
     config::config::Config,
     utils::logging::Type,
-    core::{handle, tray}, logging,logging_error
+    core::{handle, tray,hotkey},
+     logging,logging_error
 };
 
 pub static VERSION: OnceCell<String> = OnceCell::new();
@@ -22,13 +23,12 @@ pub fn create_window() {
         // println!("Found existing window, attempting to restore visibility");
 
         if window.is_minimized().unwrap_or(false) {
-            // logging!(
-            //     info,
-            //     Type::Window,
-            //     true,
-            //     "Window is minimized, restoring window state"
-            // );
-            println!("Window is minimized, restoring window state");
+            logging!(
+                info,
+                Type::Window,
+                true,
+                "Window is minimized, restoring window state"
+            );
             let _ = window.unminimize();
         }
         let _ = window.show();
@@ -36,8 +36,7 @@ pub fn create_window() {
         return;
     }
 
-    // logging!(info, Type::Window, true, "Creating new application window");
-    println!("Creating new application window");
+    logging!(info, Type::Window, true, "Creating new application window");
 
     #[cfg(target_os = "windows")]
     let _ = tauri::WebviewWindowBuilder::new(
@@ -69,14 +68,8 @@ pub async fn resolve_setup(app: &mut App) {
     handle::Handle::global().init(app.app_handle());
     VERSION.get_or_init(|| version.clone());
 
-    // logging_error!(Type::Config, true, init::init_config());
-    // logging_error!(Type::Setup, true, init::init_resources());
-    // logging_error!(Type::Setup, true, init::init_scheme());
-    // logging_error!(Type::Setup, true, init::startup_script().await);
-    // // 处理随机端口
-    // logging_error!(Type::System, true, resolve_random_port_config());
     // // 启动核心
-    // logging!(trace, Type::Config, true, "Initial config");
+    logging!(trace, Type::Config, true, "Initial config");
     logging_error!(Type::Config, true, Config::init_config().await);
 
     // if service::check_service().await.is_err() {
@@ -114,34 +107,25 @@ pub async fn resolve_setup(app: &mut App) {
     // // setup a simple http server for singleton
     // log::trace!(target: "app", "launch embed server");
     // server::embed_server();
-
-    // log::trace!(target: "app", "Initial system tray");
-    // logging_error!(Type::Tray, true, tray::Tray::global().init());
-    // logging_error!(Type::Tray, true, tray::Tray::global().create_systray(app));
     #[cfg(desktop)]
     {
-        if let Err(e) = tray::Tray::global().init() {
-            panic!("app failed to init tray:{}", e);
-        };
-        if let Err(e) = tray::Tray::global().create_systray(app) {
-            panic!("app failed to create systray:{}", e);
-        };
+        log::trace!(target: "app", "Initial system tray");
+        logging_error!(Type::Tray, true, tray::Tray::global().init());
+        logging_error!(Type::Tray, true, tray::Tray::global().create_systray(app));
     }
+    // {
+    //     if let Err(e) = tray::Tray::global().init() {
+    //         panic!("app failed to init tray:{}", e);
+    //     };
+    //     if let Err(e) = tray::Tray::global().create_systray(app) {
+    //         panic!("app failed to create systray:{}", e);
+    //     };
+    // }
 
-    // logging_error!(
-    //     Type::System,
-    //     true,
-    //     sysopt::Sysopt::global().update_sysproxy().await
-    // );
-    // logging_error!(
-    //     Type::System,
-    //     true,
-    //     sysopt::Sysopt::global().init_guard_sysproxy()
-    // );
 
     // 初始化热键
-    // logging!(trace, Type::System, true, "Initial hotkeys");
-    // logging_error!(Type::System, true, hotkey::Hotkey::global().init());
+    logging!(trace, Type::System, true, "Initial hotkeys");
+    logging_error!(Type::System, true, hotkey::Hotkey::global().init());
 
     if let Some(silent_start) = { Config::setup_config().data().silent_start } {
         if !silent_start {
