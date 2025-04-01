@@ -8,8 +8,8 @@ pub struct Draft<T: Clone + ToOwned> {
 
 macro_rules! draft_define {
     ($id: ident) => {
+        #[allow(unused)]
         impl Draft<$id> {
-            #[allow(unused)]
             pub fn data(&self) -> MappedMutexGuard<$id> {
                 MutexGuard::map(self.inner.lock(), |guard| &mut guard.0)
             }

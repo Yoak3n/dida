@@ -1,12 +1,18 @@
+// use std::fs;
+
 // use anyhow::Result;
 // use log::LevelFilter;
+// use crate::{
+//     config::Config,
+//     utils::dirs
+// };
 // fn init_log() -> Result<()> {
 //     let log_dir = dirs::app_logs_dir()?;
 //     if !log_dir.exists() {
 //         let _ = fs::create_dir_all(&log_dir);
 //     }
 
-//     let log_level = Config::verge().data().get_log_level();
+//     let log_level = Config::setup_config().data().get_log_level();
 //     if log_level == LevelFilter::Off {
 //         return Ok(());
 //     }

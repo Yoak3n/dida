@@ -3,7 +3,8 @@ use tauri::{App, Manager};
 // use anyhow::{bail, Result};
 use crate::{
     config::config::Config,
-    core::{handle, tray},
+    utils::logging::Type,
+    core::{handle, tray}, logging,logging_error
 };
 
 pub static VERSION: OnceCell<String> = OnceCell::new();
@@ -12,13 +13,13 @@ pub fn create_window() {
     println!("Creating window");
     let app_handle = handle::Handle::global().app_handle().unwrap();
     if let Some(window) = handle::Handle::global().get_window() {
-        // logging!(
-        //     info,
-        //     Type::Window,
-        //     true,
-        //     "Found existing window, attempting to restore visibility"
-        // );
-        println!("Found existing window, attempting to restore visibility");
+        logging!(
+            info,
+            Type::Window,
+            true,
+            "Found existing window, attempting to restore visibility"
+        );
+        // println!("Found existing window, attempting to restore visibility");
 
         if window.is_minimized().unwrap_or(false) {
             // logging!(
@@ -76,7 +77,7 @@ pub async fn resolve_setup(app: &mut App) {
     // logging_error!(Type::System, true, resolve_random_port_config());
     // // 启动核心
     // logging!(trace, Type::Config, true, "Initial config");
-    // logging_error!(Type::Config, true, Config::init_config().await);
+    logging_error!(Type::Config, true, Config::init_config().await);
 
     // if service::check_service().await.is_err() {
     //     match service::install_service().await {

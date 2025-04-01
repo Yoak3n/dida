@@ -19,7 +19,7 @@ impl Config {
         Self::global().setup_config.clone()
     }
 
-    // pub async fn init_config() -> Result<()> {
+    pub async fn init_config() -> Result<()> {
     //     if Self::profiles()
     //         .data()
     //         .get_item(&"Merge".to_string())
@@ -37,14 +37,14 @@ impl Config {
     //         Self::profiles().data().append_item(script_item.clone())?;
     //     }
     //     // 生成运行时配置
-    //     if let Err(err) = Self::generate().await {
-    //         logging!(error, Type::Config, true, "生成运行时配置失败: {}", err);
-    //     } else {
-    //         logging!(info, Type::Config, true, "生成运行时配置成功");
-    //     }
+        if let Err(err) = Self::generate().await {
+            logging!(error, Type::Config, true, "生成运行时配置失败: {}", err);
+        } else {
+            logging!(info, Type::Config, true, "生成运行时配置成功");
+        }
 
-    //     // 生成运行时配置文件并验证
-    //     let config_result = Self::generate_file(ConfigType::Run);
+        // 生成运行时配置文件并验证
+        let config_result = Self::generate_file(ConfigType::Run);
 
     //     let validation_result = if config_result.is_ok() {
     //         // 验证配置文件
@@ -91,8 +91,8 @@ impl Config {
     //         });
     //     }
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     // 生成正在使用的配置文件，暂不需要
     #[allow(dead_code)]
