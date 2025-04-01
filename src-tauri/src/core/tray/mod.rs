@@ -1,18 +1,17 @@
+use anyhow::Result;
 use once_cell::sync::OnceCell;
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder};
-use tauri::{Manager,Wry};
 use tauri::{
-    menu::{MenuEvent,MenuItem,Menu,PredefinedMenuItem},
+    menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem},
     App, AppHandle,
 };
-use anyhow::Result;
+use tauri::{Manager, Wry};
 
 // use super::handle;
 use crate::{
-    utils::resolve,
+    core::handle, // utils::logging::Type
     feat,
-    core::handle
-    // utils::logging::Type
+    utils::resolve,
 };
 
 pub struct Tray {}
@@ -43,14 +42,15 @@ impl Tray {
     }
     pub fn update_menu(&self) -> Result<()> {
         let app_handle = handle::Handle::global().app_handle().unwrap();
-    
+
         let tray = app_handle.tray_by_id("main").unwrap();
         let _ = tray.set_menu(Some(create_tray_menu(
-            &app_handle,handle::Handle::global().get_window_visible()
+            &app_handle,
+            handle::Handle::global().get_window_visible(),
         )?));
         Ok(())
     }
-    
+
     pub fn create_systray(&self, app: &App) -> Result<()> {
         let builder = TrayIconBuilder::with_id("main")
             .icon(app.default_window_icon().unwrap().clone())
@@ -69,24 +69,19 @@ impl Tray {
         tray.on_tray_icon_event(|tray_handle, event| {
             let app_handle = tray_handle.app_handle();
             match event {
-                tauri::tray::TrayIconEvent::Click { 
-                    button, 
+                tauri::tray::TrayIconEvent::Click {
+                    button,
                     button_state,
                     ..
-                }=>{
-                    if button_state == MouseButtonState::Down{
+                } => {
+                    if button_state == MouseButtonState::Down {
                         match button {
-                            MouseButton::Right =>{
-                                
-                            }
-                            _ =>{} 
+                            MouseButton::Right => {}
+                            _ => {}
                         }
                     }
-                }  
-                tauri::tray::TrayIconEvent::DoubleClick {  
-                    button, 
-                    ..
-                } =>{
+                }
+                tauri::tray::TrayIconEvent::DoubleClick { button, .. } => {
                     if button == MouseButton::Left {
                         if let Some(main_window) = app_handle.get_webview_window("main") {
                             if let Ok(visible) = main_window.is_visible() {
@@ -97,7 +92,7 @@ impl Tray {
                                     main_window.set_focus().unwrap();
                                 }
                             }
-                        }else{
+                        } else {
                             resolve::create_window();
                         }
                     }
@@ -105,15 +100,18 @@ impl Tray {
                 _ => {}
             }
         });
-        
-        let menu = create_tray_menu(app.app_handle(),handle::Handle::global().get_window_visible())?;
+
+        let menu = create_tray_menu(
+            app.app_handle(),
+            handle::Handle::global().get_window_visible(),
+        )?;
         tray.set_menu(Some(menu))?;
         tray.on_menu_event(on_menu_event);
         Ok(())
     }
 }
 
-fn create_tray_menu(app_handle: &AppHandle,visiable:bool) ->Result<Menu<Wry>>{
+fn create_tray_menu(app_handle: &AppHandle, visiable: bool) -> Result<Menu<Wry>> {
     let version = resolve::VERSION.get().unwrap();
     let app_version = &MenuItem::with_id(
         app_handle,
@@ -121,11 +119,12 @@ fn create_tray_menu(app_handle: &AppHandle,visiable:bool) ->Result<Menu<Wry>>{
         format!("{version}"),
         false,
         None::<&str>,
-    ).unwrap();
+    )
+    .unwrap();
     let show = {
         if visiable {
-            &MenuItem::with_id(app_handle, "open_window", "Hide", true, None::<&str>).unwrap() 
-        }else{
+            &MenuItem::with_id(app_handle, "open_window", "Hide", true, None::<&str>).unwrap()
+        } else {
             &MenuItem::with_id(app_handle, "open_window", "Show", true, None::<&str>).unwrap()
         }
     };
@@ -134,16 +133,10 @@ fn create_tray_menu(app_handle: &AppHandle,visiable:bool) ->Result<Menu<Wry>>{
         &MenuItem::with_id(app_handle, "quit", "Exit", true, Some("CmdOrControl+Q")).unwrap();
 
     let menu = tauri::menu::MenuBuilder::new(app_handle)
-        .items(&[
-            app_version,
-            separator,
-            show,
-            quit,
-        ])
+        .items(&[app_version, separator, show, quit])
         .build()
         .unwrap();
     Ok(menu)
-
 }
 
 fn on_menu_event(_: &AppHandle, event: MenuEvent) {
@@ -173,7 +166,3 @@ fn on_menu_event(_: &AppHandle, event: MenuEvent) {
         _ => {}
     }
 }
-
-
-
-

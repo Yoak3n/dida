@@ -1,16 +1,18 @@
-mod core;
-mod utils;
-mod feat;
 mod config;
+mod core;
+mod feat;
+mod utils;
 
 use std::sync::{Mutex, Once};
 
+use config::config::Config;
 use tauri::AppHandle;
 use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_single_instance;
 
 // use utils::logging::Type;
 use utils::resolve;
+use core::hotkey;
 
 pub struct AppHandleManager {
     inner: Mutex<Option<AppHandle>>,
@@ -76,6 +78,7 @@ impl AppHandleManager {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             app.notification()
@@ -96,7 +99,7 @@ pub fn run() {
     let app = builder
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
-    app.run(|app_handle,e|match e{
+    app.run(|app_handle, e| match e {
         tauri::RunEvent::Ready | tauri::RunEvent::Resumed => {
             AppHandleManager::global().init(app_handle.clone());
             #[cfg(target_os = "macos")]
@@ -150,14 +153,13 @@ pub fn run() {
                             // log_err!(hotkey::Hotkey::global().register("Control+Q", "quit"));
                         };
                         {
-                            // TODO: 暂时不支持全局热键
-                            // let is_enable_global_hotkey = Config::verge()
-                            //     .latest()
-                            //     .enable_global_hotkey
-                            //     .unwrap_or(true);
-                            // if !is_enable_global_hotkey {
-                            //     log_err!(hotkey::Hotkey::global().init())
-                            // }
+                            let enable_global_hotkey = Config::setup_config()
+                                .latest()
+                                .global_hotkey
+                                .unwrap_or(true);
+                            if !enable_global_hotkey {
+                                log_err!(hotkey::Hotkey::global().init())
+                            }
                         }
                     }
                     tauri::WindowEvent::Focused(false) => {
@@ -168,17 +170,16 @@ pub fn run() {
                         }
                         #[cfg(not(target_os = "macos"))]
                         {
-                            // log_err!(hotkey::Hotkey::global().unregister("Control+Q"));
+                            log_err!(hotkey::Hotkey::global().unregister("Control+Q"));
                         };
                         {
-                            // TODO: 暂时不支持全局热键
-                            // let is_enable_global_hotkey = Config::verge()
-                            //     .latest()
-                            //     .enable_global_hotkey
-                            //     .unwrap_or(true);
-                            // if !is_enable_global_hotkey {
-                            //     log_err!(hotkey::Hotkey::global().reset())
-                            // }
+                            let enable_global_hotkey = Config::setup_config()
+                                .latest()
+                                .global_hotkey
+                                .unwrap_or(true);
+                            if !enable_global_hotkey {
+                                log_err!(hotkey::Hotkey::global().reset())
+                            }
                         }
                     }
                     tauri::WindowEvent::Destroyed => {
@@ -190,7 +191,7 @@ pub fn run() {
 
                         #[cfg(not(target_os = "macos"))]
                         {
-                            // log_err!(hotkey::Hotkey::global().unregister("Control+Q"));
+                            log_err!(hotkey::Hotkey::global().unregister("Control+Q"));
                         };
                     }
                     _ => {}
@@ -198,6 +199,5 @@ pub fn run() {
             }
         }
         _ => {}
-    })
-;
+    });
 }

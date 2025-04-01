@@ -1,7 +1,7 @@
-use parking_lot::RwLock;
 use once_cell::sync::OnceCell;
+use parking_lot::RwLock;
 use std::sync::Arc;
-use tauri::{AppHandle,WebviewWindow,Manager};
+use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_notification::NotificationExt;
 
 /// 存储启动期间的错误消息
@@ -19,8 +19,7 @@ pub struct Handle {
     startup_completed: Arc<RwLock<bool>>,
 }
 
-
-impl Handle  {
+impl Handle {
     pub fn global() -> &'static Handle {
         static HANDLE: OnceCell<Handle> = OnceCell::new();
 
@@ -53,19 +52,15 @@ impl Handle  {
         let window: Option<WebviewWindow> = app_handle.get_webview_window("main");
         if window.is_none() {
             // log::debug!(target:"app", "main window not found");
-            return None
+            return None;
         }
         window
     }
     pub fn get_window_visible(&self) -> bool {
         let window = self.get_window();
-        match window  {
-            Some(window) => {
-                window.is_visible().unwrap() 
-            }
-            None => {
-                false 
-            }
+        match window {
+            Some(window) => window.is_visible().unwrap(),
+            None => false,
         }
     }
 
@@ -91,9 +86,14 @@ impl Handle  {
             });
             return;
         }
-        handle.app_handle().unwrap().notification().builder()
+        handle
+            .app_handle()
+            .unwrap()
+            .notification()
+            .builder()
             .title(&status_str)
             .body(&msg_str)
-            .show().unwrap();
+            .show()
+            .unwrap();
     }
 }

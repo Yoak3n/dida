@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use once_cell::sync::OnceCell;
 use anyhow::Result;
+use once_cell::sync::OnceCell;
 
 use crate::core::handle;
 
@@ -41,7 +41,5 @@ pub fn app_home_dir() -> Result<PathBuf> {
 }
 
 pub fn config_path() -> Result<PathBuf> {
-    Ok(app_home_dir()?
-        .join(SETUP_CONFIG))
-
+    Ok(app_home_dir()?.join(SETUP_CONFIG))
 }

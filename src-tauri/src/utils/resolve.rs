@@ -1,7 +1,10 @@
-use tauri::{App,Manager};
 use once_cell::sync::OnceCell;
+use tauri::{App, Manager};
 // use anyhow::{bail, Result};
-use crate::core::{handle,tray};
+use crate::{
+    config::config::Config,
+    core::{handle, tray},
+};
 
 pub static VERSION: OnceCell<String> = OnceCell::new();
 pub fn create_window() {
@@ -116,11 +119,11 @@ pub async fn resolve_setup(app: &mut App) {
     // logging_error!(Type::Tray, true, tray::Tray::global().create_systray(app));
     #[cfg(desktop)]
     {
-        if let Err(e) = tray::Tray::global().init(){
-            panic!("app failed to init tray:{}",e);
+        if let Err(e) = tray::Tray::global().init() {
+            panic!("app failed to init tray:{}", e);
         };
-        if let Err(e) = tray::Tray::global().create_systray(app){
-            panic!("app failed to create systray:{}",e);
+        if let Err(e) = tray::Tray::global().create_systray(app) {
+            panic!("app failed to create systray:{}", e);
         };
     }
 
@@ -139,11 +142,13 @@ pub async fn resolve_setup(app: &mut App) {
     // logging!(trace, Type::System, true, "Initial hotkeys");
     // logging_error!(Type::System, true, hotkey::Hotkey::global().init());
 
-    // let silent_start = { Config::verge().data().enable_silent_start };
-    // if true {
+    if let Some(silent_start) = { Config::setup_config().data().silent_start } {
+        if !silent_start {
+            create_window();
+        }
+    } else {
         create_window();
-    // }
-
+    }
     // logging_error!(Type::Tray, true, tray::Tray::global().update_part());
     // logging_error!(Type::System, true, timer::Timer::global().init());
 

@@ -1,7 +1,7 @@
-use std::{fs,path::PathBuf};
-use anyhow::{bail, Context, Result,anyhow};
-use serde_yaml::Mapping;
+use anyhow::{anyhow, bail, Context, Result};
 use serde::{de::DeserializeOwned, Serialize};
+use serde_yaml::Mapping;
+use std::{fs, path::PathBuf};
 
 pub fn read_yaml<T: DeserializeOwned>(path: &PathBuf) -> Result<T> {
     if !path.exists() {
@@ -43,7 +43,7 @@ pub fn read_mapping(path: &PathBuf) -> Result<Mapping> {
         }
         Err(err) => {
             let error_msg = format!("YAML syntax error in {}: {}", path.display(), err);
-            println!( "{}", error_msg);
+            println!("{}", error_msg);
 
             crate::core::handle::Handle::notice_message(
                 "config_validate::yaml_syntax_error",

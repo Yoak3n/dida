@@ -1,19 +1,16 @@
-use once_cell::sync::OnceCell;
-use anyhow::{anyhow, Result};
-use super::{
-    draft::Draft,
-    setup::ISetup,
-};
+use super::{draft::Draft, setup::ISetup};
 use crate::utils::{dirs, help};
+use anyhow::{anyhow, Result};
+use once_cell::sync::OnceCell;
 use std::path::PathBuf;
 pub struct Config {
     setup_config: Draft<ISetup>,
 }
 pub const CONFIG_FILE: &str = "config.yaml";
 impl Config {
-    pub fn global()->&'static Self {
-        static COONFIG: OnceCell<Config> = OnceCell::new();
-        COONFIG.get_or_init(|| Config {
+    pub fn global() -> &'static Self {
+        static CONFIG: OnceCell<Config> = OnceCell::new();
+        CONFIG.get_or_init(|| Config {
             setup_config: Draft::from(ISetup::new()),
         })
     }
@@ -97,7 +94,6 @@ impl Config {
     //     Ok(())
     // }
 
-
     // 生成正在使用的配置文件，暂不需要
     #[allow(dead_code)]
     pub fn generate_file(typ: ConfigType) -> Result<PathBuf> {
@@ -118,6 +114,7 @@ impl Config {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum ConfigType {
     Run,

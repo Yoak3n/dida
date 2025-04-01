@@ -1,11 +1,10 @@
-use std::sync::Arc;
-use parking_lot::{MappedMutexGuard, Mutex, MutexGuard};
 use super::setup::ISetup;
+use parking_lot::{MappedMutexGuard, Mutex, MutexGuard};
+use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct Draft<T: Clone + ToOwned> {
     inner: Arc<Mutex<(T, Option<T>)>>,
 }
-
 
 macro_rules! draft_define {
     ($id: ident) => {
@@ -63,6 +62,5 @@ macro_rules! draft_define {
         }
     };
 }
-
 
 draft_define!(ISetup);
