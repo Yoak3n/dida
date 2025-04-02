@@ -1,4 +1,5 @@
 import React from 'react';
+import {getCurrentWindow} from '@tauri-apps/api/window'
 import { Layout, Button } from 'antd';
 import { MinusOutlined, CloseOutlined, BorderOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -42,31 +43,31 @@ const ControlButton = styled(Button)`
 `;
 
 const CustomHeader: React.FC = () => {
-    const handleMinimize = () => {
-      // @ts-ignore - Tauri API
-      window.__TAURI__?.window.appWindow.minimize();
-    };
-  
-    const handleMaximize = () => {
-      // @ts-ignore - Tauri API
-      window.__TAURI__?.window.appWindow.toggleMaximize();
-    };
-  
-    const handleClose = () => {
-      // @ts-ignore - Tauri API
-      window.__TAURI__?.window.appWindow.close();
-    };
-  
-    return (
-      <StyledHeader>
-        <AppTitle>DiDa 应用</AppTitle>
-        <WindowControls>
-          <ControlButton icon={<MinusOutlined />} onClick={handleMinimize} />
-          <ControlButton icon={<BorderOutlined />} onClick={handleMaximize} />
-          <ControlButton icon={<CloseOutlined />} onClick={handleClose} />
-        </WindowControls>
-      </StyledHeader>
-    );
+  const window = getCurrentWindow();
+
+  const handleMinimize = () => {
+    // @ts-ignore - Tauri API
+    window.minimize();
+  };
+
+  const handleMaximize = () => {
+    window.maximize();
+  };
+
+  const handleClose = () => {
+    window.destroy();
+  };
+
+  return (
+    <StyledHeader>
+      <AppTitle>DiDa 应用</AppTitle>
+      <WindowControls>
+        <ControlButton icon={<MinusOutlined />} onClick={handleMinimize} />
+        <ControlButton icon={<BorderOutlined />} onClick={handleMaximize} />
+        <ControlButton icon={<CloseOutlined />} onClick={handleClose} />
+      </WindowControls>
+    </StyledHeader>
+  );
   };
   
   export default CustomHeader;

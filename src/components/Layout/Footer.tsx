@@ -15,14 +15,14 @@ const StyledFooter = styled(Footer)`
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.03);
 `;
 
-const NavItem = styled.div<{ active: boolean }>`
+const NavItem = styled.div<{ $active: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 8px 0;
   cursor: pointer;
-  color: ${props => props.active ? '#1890ff' : 'rgba(0, 0, 0, 0.65)'};
+  color: ${props => props.$active ? '#1890ff' : 'rgba(0, 0, 0, 0.65)'};
   font-size: 12px;
   width: 33.33%;
   transition: all 0.3s;
@@ -51,7 +51,7 @@ const CustomFooter: React.FC = () => {
         {navItems.map(item => (
           <NavItem 
             key={item.key} 
-            active={currentPath === item.key}
+            $active={currentPath === item.key}
             onClick={() => navigate(item.key)}
           >
             <IconWrapper>{item.icon}</IconWrapper>
