@@ -10,7 +10,7 @@ import './App.css';
 
 const App: React.FC = () => {
   return (
-    <ConfigProvider locale={zhCN}>
+    <ConfigProvider locale={zhCN} virtual={false}>
       <Router>
         <AppLayout>
           <Routes>
