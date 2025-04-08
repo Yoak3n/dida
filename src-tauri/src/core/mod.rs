@@ -4,5 +4,5 @@ pub mod hotkey;
 #[cfg(desktop)]
 pub mod tray;
 pub mod core;
-
-pub use self::core::*;
+pub mod cmd;
+pub use self::{core::*,cmd::*};

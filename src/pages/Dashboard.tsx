@@ -148,7 +148,10 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ant-picker-calendar-date-content">
                 {listData.slice(0, 3).map((item, index) => (
-                  <Tooltip key={index} title={item.content}>
+                  <div key={index} onClick={(e) => {
+                    e.stopPropagation();
+                    showEventDetails(current, listData);
+                  }}>
                     <EventBadge
                       status={item.type as any}
                       text={item.content}
@@ -157,7 +160,7 @@ const Dashboard: React.FC = () => {
                         showEventDetails(current, listData);
                       }}
                     />
-                  </Tooltip>
+                  </div>
                 ))}
                 {listData.length > 3 && (
                   <EventBadge

@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Card, List, Avatar } from 'antd';
+import { Typography, Card, List, Avatar,Button } from 'antd';
 const { Title, Paragraph } = Typography;
 const Home: React.FC = () => {
     const data = [
@@ -19,7 +19,9 @@ const Home: React.FC = () => {
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task3',
         },
     ];
-
+    const handleClick = (desc:string) => {
+        console.log('Button clicked!', desc);
+    };
     return (
         <div>
             <Title level={2}>欢迎使用 DiDa 应用</Title>
@@ -33,7 +35,14 @@ const Home: React.FC = () => {
                         <List.Item>
                             <List.Item.Meta
                                 avatar={<Avatar src={item.avatar} />}
-                                title={item.title}
+                                title={<Button color="default" variant="text" onClick={
+                                    (e)=>{
+                                        e.stopPropagation()
+                                        handleClick(item.description)
+                                    }
+                                    }>
+                                        {item.title}
+                                        </Button>}
                                 description={item.description}
                             />
                         </List.Item>

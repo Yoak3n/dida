@@ -2,7 +2,7 @@ mod config;
 mod core;
 mod feat;
 mod utils;
-
+mod schema;
 use std::sync::{Mutex, Once};
 
 use config::config::Config;
