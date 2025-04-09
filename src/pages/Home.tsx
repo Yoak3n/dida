@@ -1,5 +1,18 @@
 import React from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { Typography, Card, List, Avatar,Button } from 'antd';
+
+import {Action} from '../types/index'
+
+
+const test_action:Action = {
+    typ:'test',
+    name:'test',
+    command: 'E:/IDE/Trae',
+    args: ['-n', 'test'],
+    desc: 'test',
+}
+
 const { Title, Paragraph } = Typography;
 const Home: React.FC = () => {
     const data = [
@@ -19,8 +32,9 @@ const Home: React.FC = () => {
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task3',
         },
     ];
-    const handleClick = (desc:string) => {
+    const handleClick = async(desc:string) => {
         console.log('Button clicked!', desc);
+        invoke('execute_action',{act:test_action})
     };
     return (
         <div>

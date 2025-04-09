@@ -1,12 +1,13 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize,Serialize, Debug)]
 pub struct Action {
     pub name: String,
     pub desc: String,
     pub command: String,
     pub args: Vec<String>,
+    pub typ:String,
 }
 
 #[allow(dead_code)]
@@ -43,7 +44,7 @@ impl ActionData {
             args: action.args.clone(),
             typ: ActionType::ExecCommand,
         };
-        data.typ = ActionType::ExecCommand;
+        data.typ = ActionType::OpenDir;
         data
     }
 }

@@ -84,6 +84,7 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             app.notification()
                 .builder()
@@ -111,7 +112,9 @@ pub fn run() {
             Ok(())
         });
     let app = builder
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![
+            feat::execute_action
+        ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
     app.run(|app_handle, e| match e {
