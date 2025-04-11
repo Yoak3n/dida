@@ -3,7 +3,10 @@ use parking_lot::RwLock;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_notification::NotificationExt;
-
+use crate::{
+    logging,
+    utils::logging::Type
+};
 /// 存储启动期间的错误消息
 #[derive(Debug, Clone)]
 struct ErrorMessage {
@@ -69,14 +72,14 @@ impl Handle {
         let status_str = status.into();
         let msg_str = msg.into();
         if !*handle.startup_completed.read() {
-            // logging!(
-            //     info,
-            //     Type::Frontend,
-            //     true,
-            //     "启动过程中发现错误，加入消息队列: {} - {}",
-            //     status_str,
-            //     msg_str
-            // );
+            logging!(
+                info,
+                Type::Frontend,
+                true,
+                "启动过程中发现错误，加入消息队列: {} - {}",
+                status_str,
+                msg_str
+            );
 
             // 将消息添加到启动错误队列
             let mut errors = handle.startup_errors.write();

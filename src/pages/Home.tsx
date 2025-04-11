@@ -8,7 +8,7 @@ import {Action} from '../types/index'
 const test_action:Action = {
     typ:'test',
     name:'test',
-    command: 'E:/IDE/Trae',
+    command: 'C:\\daimin\\codes',
     args: ['-n', 'test'],
     desc: 'test',
 }
