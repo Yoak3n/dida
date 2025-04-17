@@ -6,7 +6,7 @@ pub struct Action {
     pub name: String,
     pub desc: String,
     pub command: String,
-    pub args: Vec<String>,
+    pub args: Option<Vec<String>>,
     pub typ:String,
 }
 
@@ -26,7 +26,7 @@ pub struct ActionData{
     pub typ : ActionType,
     pub desc : String,
     pub command : String,
-    pub args : Vec<String>,
+    pub args : Option<Vec<String>>,
 }
 pub enum ActionType {
     OpenDir,
@@ -45,15 +45,10 @@ impl ActionData {
             typ: ActionType::ExecCommand,
         };
         match action.typ.as_str() {
-            "open_dir" => {
-                data.typ = ActionType::OpenDir;
-            }
-            "open_file" => {
-                data.typ = ActionType::OpenFile;
-            }
-            "open_url" => {
-                data.typ = ActionType::OpenUrl;
-            }
+            "open_dir" => data.typ = ActionType::OpenDir,
+            "open_file" => data.typ = ActionType::OpenFile,
+            "open_url" => data.typ = ActionType::OpenUrl,
+            "exec_command" =>  data.typ = ActionType::ExecCommand,
             _ => {}
         }
         data
