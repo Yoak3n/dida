@@ -1,19 +1,18 @@
 import React from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Typography, Card, List, Avatar,Button } from 'antd';
+import {Card, List, Avatar,Button,FloatButton } from 'antd';
 
 import {Action} from '../types/index'
 
 
 const test_action:Action = {
-    typ:'test',
+    typ:'open_dir',
     name:'test',
-    command: 'C:\\daimin\\codes',
+    command: 'C:\\',
     args: ['-n', 'test'],
     desc: 'test',
 }
 
-const { Title, Paragraph } = Typography;
 const Home: React.FC = () => {
     const data = [
         {
@@ -38,9 +37,6 @@ const Home: React.FC = () => {
     };
     return (
         <div>
-            <Title level={2}>欢迎使用 DiDa 应用</Title>
-            <Paragraph>这是一个使用 Tauri 和 React 构建的桌面应用程序。</Paragraph>
-
             <Card title="今日任务" style={{ marginTop: 16 }}>
                 <List
                     itemLayout="horizontal"
@@ -63,6 +59,7 @@ const Home: React.FC = () => {
                     )}
                 />
             </Card>
+            <FloatButton onClick={()=>{console.log('FloatButton clicked!')}}/>
         </div>
     )
 

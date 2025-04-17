@@ -44,7 +44,18 @@ impl ActionData {
             args: action.args.clone(),
             typ: ActionType::ExecCommand,
         };
-        data.typ = ActionType::OpenDir;
+        match action.typ.as_str() {
+            "open_dir" => {
+                data.typ = ActionType::OpenDir;
+            }
+            "open_file" => {
+                data.typ = ActionType::OpenFile;
+            }
+            "open_url" => {
+                data.typ = ActionType::OpenUrl;
+            }
+            _ => {}
+        }
         data
     }
 }
