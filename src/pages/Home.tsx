@@ -71,23 +71,6 @@ const test_tasks:TaskView[]=[
 
 
 const Home: React.FC = () => {
-    // const data = [
-    //     {
-    //         title: '任务 1',
-    //         description: '完成应用框架搭建',
-    //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task1',
-    //     },
-    //     {
-    //         title: '任务 2',
-    //         description: '实现自定义标题栏',
-    //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task2',
-    //     },
-    //     {
-    //         title: '任务 3',
-    //         description: '添加页面导航功能',
-    //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task3',
-    //     },
-    // ];
     const handleClick = async(actions:Action[]) => {
         // console.log('Button clicked!', desc);
         for (let i = 0; i < actions.length; i++) {

@@ -28,9 +28,10 @@ pub struct ActionData{
     pub command : String,
     pub args : Option<Vec<String>>,
 }
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize,Debug,Clone)]
+#[repr(u8)]
 pub enum ActionType {
-    OpenDir,
+    OpenDir = 0,
     OpenFile,
     OpenUrl,
     ExecCommand,
@@ -39,7 +40,29 @@ pub enum ActionType {
     SyncOpenUrl,
     SyncExecCommand,
 }
+impl From<ActionType> for u8 {
+    fn from(action_type: ActionType) -> Self {
+        action_type as u8
+    }
+}
 
+impl TryFrom<u8> for ActionType {
+    type Error = anyhow::Error;
+    
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(ActionType::OpenDir),
+            1 => Ok(ActionType::OpenFile),
+            2 => Ok(ActionType::OpenUrl),
+            3 => Ok(ActionType::ExecCommand),
+            4 => Ok(ActionType::SyncOpenDir),
+            5 => Ok(ActionType::SyncOpenFile),
+            6 => Ok(ActionType::SyncOpenUrl),
+            7 => Ok(ActionType::SyncExecCommand),
+            _ => Err(anyhow::anyhow!("无效的 ActionType 值: {}", value)),
+        }
+    }
+}
 impl ActionData {
     pub fn from_action(action : &Action) -> ActionData {
         let mut data = ActionData {

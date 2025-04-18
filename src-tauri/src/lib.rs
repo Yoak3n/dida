@@ -5,7 +5,7 @@ mod utils;
 mod schema;
 mod store;
 
-use std::sync::{Mutex, Once};
+use std::sync::{Mutex, Once,Arc};
 
 use config::config::Config;
 use tauri::AppHandle;
@@ -16,6 +16,8 @@ use tauri_plugin_single_instance;
 
 // use utils::logging::Type;
 use utils::resolve;
+use store::db::Database;
+use schema::state::AppState;
 #[cfg(desktop)]
 use core::hotkey;
 
@@ -83,7 +85,12 @@ impl AppHandleManager {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(desktop)]
+    let db = Database::new(".".into()).expect("Failed to initialize database");
+    let app_state = AppState {
+        db: Arc::new(db),
+    };
     let builder = tauri::Builder::default()
+        .manage(app_state)
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_shell::init())
@@ -115,7 +122,7 @@ pub fn run() {
         });
     let app = builder
         .invoke_handler(tauri::generate_handler![
-            feat::execute_action
+            core::cmd::action::execute_actions
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");

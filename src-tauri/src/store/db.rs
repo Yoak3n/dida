@@ -1,16 +1,21 @@
+use std::path::PathBuf;
+
 use rusqlite::Connection;
 use parking_lot::RwLock;
 use anyhow::Result;
 
 use super::module::ActionManager;
-use crate::{schema::{Action, ActionRecord},utils::help::random_string};
+use crate::{
+    schema::{Action, ActionRecord, ActionType,ActionData},
+    utils::help::random_string};
 pub struct Database {
     conn: RwLock<Connection>,
 }
-
+unsafe impl Send for Database {}
+unsafe impl Sync for Database {}
 impl Database {
-    pub fn new(db_path: &str) -> Result<Self> {
-        let conn = Connection::open(db_path)?;
+    pub fn new(db_path: PathBuf) -> Result<Self> {
+        let conn = Connection::open(db_path.join("ducker.db"))?;
 
         conn.execute(
             "CREATE TABLE IF NOT EXISTS tasks (
@@ -32,7 +37,7 @@ impl Database {
                 desc TEXT,
                 command TEXT NOT NULL,
                 args TEXT,
-                typ TEXT NOT NULL
+                typ INTEGER NOT NULL
             )",
             [],
         )?;
@@ -47,13 +52,23 @@ impl Database {
 
 
 impl ActionManager for Database {
-    fn create_action(&self, action: &Action) -> Result<String> {
+    fn create_action(&self, action: &Action) -> Result<ActionRecord> {
         let  conn = self.conn.write();
         let mut args_text = String::new();
         if let Some(args) = &action.args {
             args_text = args.join(",");
         }
-        let action_id = random_string(6) + "action";
+        let action_id = random_string(6) + "act";
+        let data =ActionData::from_action(&action);
+        let record = ActionRecord {
+            id: action_id.clone(),
+            name: data.name,
+            desc: data.desc,
+            command: data.command,
+            args: args_text.clone(),
+            typ: data.typ.clone(),
+        };
+        let typ_value: u8 = data.typ.into();
         conn.execute(
             "INSERT INTO actions (id, name, desc, command, args, typ)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -63,28 +78,132 @@ impl ActionManager for Database {
                 &action.desc,
                 &action.command,
                 &args_text,
-                &action.typ
+                typ_value
             ))?;
-        Ok(action_id)
+        Ok(record)
     }
 
-    fn update_action(&self, action: &Action) -> anyhow::Result<ActionRecord> {
-        todo!()
+    fn update_action(&self,id: &str, action: &Action) -> Result<ActionRecord> {
+        let conn = self.conn.write();
+        let mut args_text = String::new();
+        if let Some(args) = &action.args {
+            args_text = args.join(",");
+        }
+        conn.execute(
+            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5
+            WHERE id = ?6",
+            (
+                &action.name,
+                &action.desc,
+                &action.command,
+                &args_text,
+                &action.typ,
+                id
+            ))?;
+        self.get_action(id)
     }
 
-    fn delete_action(&self, id: &str) -> anyhow::Result<()> {
-        todo!()
+    fn delete_action(&self, id: &str) -> Result<()> {
+        let conn = self.conn.write();
+        conn.execute("DELETE FROM actions WHERE id = ?1", [id])?;
+        Ok(())
     }
 
-    fn get_action(&self, id: &str) -> anyhow::Result<ActionRecord> {
-        todo!()
+    fn get_action(&self, id: &str) -> Result<ActionRecord> {
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ FROM actions WHERE id = ?1")?;
+        let action = stmt.query_row([id], |row| {
+            let id = row.get(0)?;
+            let name = row.get(1)?;
+            let desc = row.get(2)?;
+            let command = row.get(3)?;
+            let args_text: String = row.get(4)?;
+            let typ_number: u8 = row.get(5)?;
+            let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
+            
+            Ok(ActionRecord {
+                id,
+                name,
+                desc,
+                command,
+                args:args_text,
+                typ,
+            })
+        })?;
+        Ok(action)
     }
 
-    fn get_actions(&self, ids: &[String]) -> anyhow::Result<Vec<ActionRecord>> {
-        todo!()
+    fn get_actions(&self, ids: &[String]) -> Result<Vec<ActionRecord>> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.conn.read();
+        let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+        let query = format!(
+            "SELECT id, name, desc, command, args, typ FROM actions WHERE id IN ({})",
+            placeholders
+        );
+        
+        let mut stmt = conn.prepare(&query)?;
+        let params = ids.iter().map(|id| id as &dyn rusqlite::ToSql).collect::<Vec<_>>();
+        
+        let action_iter = stmt.query_map(params.as_slice(), |row| {
+            let id = row.get(0)?;
+            let name = row.get(1)?;
+            let desc = row.get(2)?;
+            let command = row.get(3)?;
+            let args_text: String = row.get(4)?;
+            let typ_number: u8 = row.get(5)?;
+            let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
+            
+            Ok(ActionRecord {
+                id,
+                name,
+                desc,
+                command,
+                args:args_text,
+                typ,
+            })
+        })?;
+        
+        let mut actions = Vec::new();
+        for action in action_iter {
+            actions.push(action?);
+        }
+        
+        Ok(actions)
     }
 
     fn get_all_actions(&self) -> anyhow::Result<Vec<crate::schema::ActionRecord>> {
-        todo!()
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ FROM actions")?;
+        
+        
+        let action_iter = stmt.query_map([], |row| {
+            let id = row.get(0)?;
+            let name = row.get(1)?;
+            let desc = row.get(2)?;
+            let command = row.get(3)?;
+            let args_text: String = row.get(4)?;
+            let typ_number: u8 = row.get(5)?;
+            let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
+            
+            Ok(ActionRecord {
+                id,
+                name,
+                desc,
+                command,
+                args:args_text,
+                typ,
+            })
+        })?;
+        
+        let mut actions = Vec::new();
+        for action in action_iter {
+            actions.push(action?);
+        }
+        
+        Ok(actions)
     }
 }
+
