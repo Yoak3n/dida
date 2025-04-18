@@ -53,6 +53,7 @@ pub fn create_window() {
                 .additional_browser_args("--enable-features=msWebView2EnableDraggableRegions --disable-features=OverscrollHistoryNavigation,msExperimentalScrolling")
                 .transparent(true)
                 .shadow(true)
+                .center()
                 .build();
     }
     #[cfg(mobile)]

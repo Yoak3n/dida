@@ -30,6 +30,7 @@ pub async fn execute_action(app:AppHandle,act:Action) -> Result<(), String> {
         }
         ActionType::ExecCommand => {
             println!("执行命令：{:?}",&data.command);
+            // 暂时只支持windows命令行，减少开发阶段的心智负担
             let mut cmd = Command::new("cmd");
             cmd.arg("/C").arg(&data.command);
             if let Some(args) = data.args.as_ref(){
@@ -47,6 +48,7 @@ pub async fn execute_action(app:AppHandle,act:Action) -> Result<(), String> {
             let output_message = String::from_utf8_lossy(&output.stdout);
             println!("命令输出: {}", output_message);
         }
+        _ => {}
     }
     Ok(())
 }

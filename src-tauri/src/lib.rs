@@ -3,6 +3,8 @@ mod core;
 mod feat;
 mod utils;
 mod schema;
+mod store;
+
 use std::sync::{Mutex, Once};
 
 use config::config::Config;

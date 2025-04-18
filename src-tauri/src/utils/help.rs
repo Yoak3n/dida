@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_yaml::Mapping;
-use std::{fs, path::PathBuf};
+use std::{fmt::format, fs, path::PathBuf};
 
 pub fn read_yaml<T: DeserializeOwned>(path: &PathBuf) -> Result<T> {
     if !path.exists() {
@@ -66,4 +66,19 @@ pub fn save_yaml<T: Serialize>(path: &PathBuf, data: &T, prefix: Option<&str>) -
     let path_str = path.as_os_str().to_string_lossy().to_string();
     fs::write(path, yaml_str.as_bytes())
         .with_context(|| format!("failed to save file \"{path_str}\""))
+}
+
+
+pub fn random_string(len: usize) -> String {
+    use rand::Rng;
+    use rand::distributions::Alphanumeric;
+    use chrono::prelude::*;
+    let dt = Local::now();
+    let mut rng = rand::thread_rng();
+    let random_str: String = (0..len)
+        .map(|_| rng.sample(Alphanumeric) as char)
+        .collect();
+    let rand_ts = &dt.timestamp().to_string()[..6];
+    let rand_result = format!("{}{}", random_str, rand_ts);
+    rand_result
 }

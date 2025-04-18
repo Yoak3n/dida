@@ -13,12 +13,12 @@ pub struct Action {
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct ActionRecord {
-    pub id: usize,
+    pub id: String,
+    pub typ:ActionType,
     pub name: String,
     pub desc: String,
     pub command: String,
-    pub args: Vec<String>,
-    pub task_id: usize,
+    pub args: String,
 }
 
 pub struct ActionData{
@@ -28,11 +28,16 @@ pub struct ActionData{
     pub command : String,
     pub args : Option<Vec<String>>,
 }
+#[derive(Deserialize,Debug)]
 pub enum ActionType {
     OpenDir,
     OpenFile,
     OpenUrl,
     ExecCommand,
+    SyncOpenDir,
+    SyncOpenFile,
+    SyncOpenUrl,
+    SyncExecCommand,
 }
 
 impl ActionData {
