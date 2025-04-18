@@ -24,8 +24,8 @@ impl Database {
                 name TEXT NOT NULL,
                 desc TEXT,
                 actions TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                start_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                start_at TIMESTAMP
             )",
             [],
         )?;
@@ -37,7 +37,8 @@ impl Database {
                 desc TEXT,
                 command TEXT NOT NULL,
                 args TEXT,
-                typ INTEGER NOT NULL
+                typ INTEGER NOT NULL,
+                sync INTEGER NOT NULL DEFAULT 0
             )",
             [],
         )?;
@@ -64,13 +65,14 @@ impl ActionManager for Database {
             id: action_id.clone(),
             name: data.name,
             desc: data.desc,
+            sync:data.sync,
             command: data.command,
             args: args_text.clone(),
             typ: data.typ.clone(),
         };
         let typ_value: u8 = data.typ.into();
         conn.execute(
-            "INSERT INTO actions (id, name, desc, command, args, typ)
+            "INSERT INTO actions (id, name, desc, command, args, typ,sync)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             (
                 &action_id,
@@ -78,7 +80,8 @@ impl ActionManager for Database {
                 &action.desc,
                 &action.command,
                 &args_text,
-                typ_value
+                typ_value,
+                data.sync
             ))?;
         Ok(record)
     }
@@ -90,14 +93,15 @@ impl ActionManager for Database {
             args_text = args.join(",");
         }
         conn.execute(
-            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5
-            WHERE id = ?6",
+            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,sync =?6
+            WHERE id = ?7",
             (
                 &action.name,
                 &action.desc,
                 &action.command,
                 &args_text,
                 &action.typ,
+                &action.sync,
                 id
             ))?;
         self.get_action(id)
@@ -111,7 +115,7 @@ impl ActionManager for Database {
 
     fn get_action(&self, id: &str) -> Result<ActionRecord> {
         let conn = self.conn.read();
-        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ FROM actions WHERE id = ?1")?;
+        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ,sync FROM actions WHERE id = ?1")?;
         let action = stmt.query_row([id], |row| {
             let id = row.get(0)?;
             let name = row.get(1)?;
@@ -120,11 +124,12 @@ impl ActionManager for Database {
             let args_text: String = row.get(4)?;
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
-            
+            let sync = row.get(6)?;
             Ok(ActionRecord {
                 id,
                 name,
                 desc,
+                sync,
                 command,
                 args:args_text,
                 typ,
@@ -140,7 +145,7 @@ impl ActionManager for Database {
         let conn = self.conn.read();
         let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
         let query = format!(
-            "SELECT id, name, desc, command, args, typ FROM actions WHERE id IN ({})",
+            "SELECT id, name, desc, command, args, typ,sync FROM actions WHERE id IN ({})",
             placeholders
         );
         
@@ -155,7 +160,7 @@ impl ActionManager for Database {
             let args_text: String = row.get(4)?;
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
-            
+            let sync = row.get(6)?;
             Ok(ActionRecord {
                 id,
                 name,
@@ -163,6 +168,7 @@ impl ActionManager for Database {
                 command,
                 args:args_text,
                 typ,
+                sync,
             })
         })?;
         
@@ -176,7 +182,7 @@ impl ActionManager for Database {
 
     fn get_all_actions(&self) -> anyhow::Result<Vec<crate::schema::ActionRecord>> {
         let conn = self.conn.read();
-        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ FROM actions")?;
+        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ, sync FROM actions")?;
         
         
         let action_iter = stmt.query_map([], |row| {
@@ -187,7 +193,7 @@ impl ActionManager for Database {
             let args_text: String = row.get(4)?;
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
-            
+            let sync = row.get(6)?;
             Ok(ActionRecord {
                 id,
                 name,
@@ -195,6 +201,7 @@ impl ActionManager for Database {
                 command,
                 args:args_text,
                 typ,
+                sync,
             })
         })?;
         

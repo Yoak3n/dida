@@ -9,8 +9,7 @@ pub fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
     
     for action in actions {
         // 检查 action 类型是否需要同步执行
-        let is_sync = action.typ.starts_with("sync_") || 
-                      action.typ.starts_with("Sync");
+        let is_sync = action.sync;
         
         if is_sync {
             // 同步执行 - 等待任务完成

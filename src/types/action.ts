@@ -6,6 +6,7 @@ interface IAction{
     command:string,
     args?:string[],
     typ:ActionType,
+    sync:boolean
 }
 
 // export enum ActionType{

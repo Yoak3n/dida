@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct Action {
     pub name: String,
     pub desc: String,
+    pub sync: bool,
     pub command: String,
     pub args: Option<Vec<String>>,
     pub typ:String,
@@ -16,6 +17,7 @@ pub struct ActionRecord {
     pub id: String,
     pub typ:ActionType,
     pub name: String,
+    pub sync: bool,
     pub desc: String,
     pub command: String,
     pub args: String,
@@ -25,6 +27,7 @@ pub struct ActionData{
     pub name : String,
     pub typ : ActionType,
     pub desc : String,
+    pub sync: bool,
     pub command : String,
     pub args : Option<Vec<String>>,
 }
@@ -35,10 +38,6 @@ pub enum ActionType {
     OpenFile,
     OpenUrl,
     ExecCommand,
-    SyncOpenDir,
-    SyncOpenFile,
-    SyncOpenUrl,
-    SyncExecCommand,
 }
 impl From<ActionType> for u8 {
     fn from(action_type: ActionType) -> Self {
@@ -55,10 +54,6 @@ impl TryFrom<u8> for ActionType {
             1 => Ok(ActionType::OpenFile),
             2 => Ok(ActionType::OpenUrl),
             3 => Ok(ActionType::ExecCommand),
-            4 => Ok(ActionType::SyncOpenDir),
-            5 => Ok(ActionType::SyncOpenFile),
-            6 => Ok(ActionType::SyncOpenUrl),
-            7 => Ok(ActionType::SyncExecCommand),
             _ => Err(anyhow::anyhow!("无效的 ActionType 值: {}", value)),
         }
     }
@@ -68,6 +63,7 @@ impl ActionData {
         let mut data = ActionData {
             name: action.name.clone(),
             desc: action.desc.clone(),
+            sync: action.sync,
             command: action.command.clone(),
             args: action.args.clone(),
             typ: ActionType::ExecCommand,

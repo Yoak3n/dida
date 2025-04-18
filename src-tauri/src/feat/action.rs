@@ -19,18 +19,6 @@ pub async fn execute_action(act:&Action) -> Result<(), String> {
         ActionType::ExecCommand => {
             execute_command(data.command,data.args).await?;
         }
-        ActionType::SyncExecCommand => {
-            execute_command(data.command,data.args).await?;
-        }
-        ActionType::SyncOpenDir => {
-            
-        }
-        ActionType::SyncOpenFile => {
-            
-        }
-        ActionType::SyncOpenUrl => {
-            
-        }
     }
     Ok(())
 }
@@ -54,7 +42,7 @@ async fn open_url(url:String)->Result<(),String>{
     Ok(())
 } 
 
-
+#[cfg(target_os = "windows")]
 async fn execute_command(command:String,args:Option<Vec<String>>)->Result<String,String>{
     let mut cmd = Command::new("cmd");
     cmd.arg("/C").arg(&command);

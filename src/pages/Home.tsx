@@ -11,6 +11,7 @@ const test_action1:Action = {
     command: 'www.baidu.com',
     args: ['-n', 'test'],
     desc: 'test',
+    sync:false,
 }
 const test_action2:Action = {
     typ:'open_dir',
@@ -18,6 +19,7 @@ const test_action2:Action = {
     command: 'c:\\',
     args: ['-n', 'test'],
     desc: 'test',
+    sync:false,
 }
 const test_action3:Action = {
     typ:'open_file',
@@ -25,6 +27,7 @@ const test_action3:Action = {
     command: 'c:\\Users\\Yoake\\Desktop\\Diagnostics-1728806255.log',
     args: ['-n', 'test'],
     desc: 'test',
+    sync:false,
 }
 const test_action4:Action = {
    typ: 'exec_command',
@@ -32,6 +35,7 @@ const test_action4:Action = {
    command: 'git',
    args: ['status'], 
    desc: 'test',
+   sync:false,
 }
 const test_tasks:TaskView[]=[
     {
@@ -73,10 +77,9 @@ const test_tasks:TaskView[]=[
 const Home: React.FC = () => {
     const handleClick = async(actions:Action[]) => {
         // console.log('Button clicked!', desc);
-        for (let i = 0; i < actions.length; i++) {
-            const action = actions[i];
-            invoke('execute_action',{act:action})
-        }
+        
+        invoke('execute_actions',{actions:actions})
+        
     };
     return (
         <div>
