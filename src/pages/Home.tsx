@@ -26,7 +26,7 @@ const test_action3:Action = {
     name:'打开文件',
     command: 'E:\\Application\\MuMuPlayer-12.0\\shell\\MuMuPlayer.exe',
     desc: '打开mumu模拟器',
-    wait:10000,
+    wait:2000,
 }
 const test_action4:Action = {
    typ: 'exec_command',
@@ -104,6 +104,8 @@ const Home: React.FC = () => {
                 duration: 2,
             });
         }catch(err){
+            console.log(err);
+            
             messageApi.open({
                 type: 'error',
                 content: err as string,
