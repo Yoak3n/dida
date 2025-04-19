@@ -76,7 +76,7 @@ impl Handle {
                 info,
                 Type::Frontend,
                 true,
-                "启动过程中发现错误，加入消息队列: {} - {}",
+                "启动过程中收到消息，加入消息队列: {} - {}",
                 status_str,
                 msg_str
             );

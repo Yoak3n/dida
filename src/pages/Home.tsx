@@ -11,7 +11,7 @@ const test_action1:Action = {
     command: 'www.baidu.com',
     args: ['-n', 'test'],
     desc: 'test',
-    sync:false,
+    wait:0,
 }
 const test_action2:Action = {
     typ:'open_dir',
@@ -19,29 +19,45 @@ const test_action2:Action = {
     command: 'c:\\',
     args: ['-n', 'test'],
     desc: 'test',
-    sync:false,
+    wait:0,
 }
 const test_action3:Action = {
     typ:'open_file',
     name:'打开文件',
-    command: 'c:\\Users\\Yoake\\Desktop\\Diagnostics-1728806255.log',
-    args: ['-n', 'test'],
-    desc: 'test',
-    sync:false,
+    command: 'E:\\Application\\MuMuPlayer-12.0\\shell\\MuMuPlayer.exe',
+    desc: '打开mumu模拟器',
+    wait:10000,
 }
 const test_action4:Action = {
    typ: 'exec_command',
    name: '执行命令',
-   command: 'git',
-   args: ['status'], 
+   command: 'maa',
+   args: ['run','start'], 
    desc: 'test',
-   sync:false,
+   wait:1,
+}
+const test_action5:Action = {
+    typ: 'exec_command',
+    name: '执行命令',
+    command: 'maa',
+    args: ['run','morning'], 
+    desc: 'test',
+    wait:1,
+}
+
+const close_mumu_action: Action = {
+    typ: 'exec_command',
+    name: '关闭MuMu模拟器',
+    command: 'taskkill',
+    args: ['/F', '/IM', 'MuMuPlayer.exe'], 
+    desc: '强制关闭MuMu模拟器进程',
+    wait: 0,
 }
 const test_tasks:TaskView[]=[
     {
         title:'任务 1',
-        description:'完成应用框架搭建',
-        actions:[test_action1],
+        description:'关闭MuMu模拟器',
+        actions:[close_mumu_action],
         completed:false,
         createdAt:new Date(),
         dueDate:new Date(),
@@ -58,15 +74,15 @@ const test_tasks:TaskView[]=[
         title: '任务 3',
         description: '添加页面导航功能',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task3',
-        actions:[test_action3],
+        actions:[test_action5],
         completed: false,
         createdAt: new Date(),
         dueDate: new Date(),
     },{
         title: '任务 4',
-        description: '添加页面导航功能',
+        description: '早起学习',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task4',
-        actions:[test_action4],
+        actions:[test_action3,test_action4],
         completed: false,
         createdAt: new Date(),
         dueDate: new Date(),

@@ -58,7 +58,7 @@ impl Config {
                         Some(("config_validate::boot_error", error_msg))
                     } else {
                         logging!(info, Type::Config, true, "配置验证成功");
-                        Some(("config_validate::success", String::new()))
+                        Some(("config_validate::success", String::from("配置验证成功")))
                     }
                 }
                 Err(err) => {

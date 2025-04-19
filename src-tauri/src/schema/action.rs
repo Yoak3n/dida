@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
-#[derive(Deserialize,Serialize, Debug)]
+#[derive(Deserialize,Serialize, Debug,Clone)]
 pub struct Action {
     pub name: String,
     pub desc: String,
-    pub sync: bool,
+    pub wait: usize,
     pub command: String,
     pub args: Option<Vec<String>>,
     pub typ:String,
@@ -17,7 +17,7 @@ pub struct ActionRecord {
     pub id: String,
     pub typ:ActionType,
     pub name: String,
-    pub sync: bool,
+    pub wait: usize,
     pub desc: String,
     pub command: String,
     pub args: String,
@@ -27,7 +27,7 @@ pub struct ActionData{
     pub name : String,
     pub typ : ActionType,
     pub desc : String,
-    pub sync: bool,
+    pub wait: usize,
     pub command : String,
     pub args : Option<Vec<String>>,
 }
@@ -63,7 +63,7 @@ impl ActionData {
         let mut data = ActionData {
             name: action.name.clone(),
             desc: action.desc.clone(),
-            sync: action.sync,
+            wait: action.wait,
             command: action.command.clone(),
             args: action.args.clone(),
             typ: ActionType::ExecCommand,
