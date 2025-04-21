@@ -49,6 +49,7 @@ pub fn create_window() {
                 .inner_size(890.0, 700.0)
                 .min_inner_size(620.0, 550.0)
                 .decorations(false)
+                .focused(true)
                 .maximizable(true)
                 .additional_browser_args("--enable-features=msWebView2EnableDraggableRegions --disable-features=OverscrollHistoryNavigation,msExperimentalScrolling")
                 .transparent(true)

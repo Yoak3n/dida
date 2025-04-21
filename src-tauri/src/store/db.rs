@@ -1,13 +1,14 @@
 use std::path::PathBuf;
 
-use rusqlite::Connection;
-use parking_lot::RwLock;
 use anyhow::Result;
+use parking_lot::RwLock;
+use rusqlite::Connection;
 
 use super::module::ActionManager;
 use crate::{
-    schema::{Action, ActionRecord, ActionType,ActionData},
-    utils::help::random_string};
+    schema::{Action, ActionRecord, ActionType},
+    utils::help::random_string,
+};
 pub struct Database {
     conn: RwLock<Connection>,
 }
@@ -38,7 +39,8 @@ impl Database {
                 command TEXT NOT NULL,
                 args TEXT,
                 typ INTEGER NOT NULL,
-                await INTEGER NOT NULL DEFAULT 0
+                wait INTEGER NOT NULL DEFAULT 0
+                retry INTEGER NOT NULL DEFAULT 0
             )",
             [],
         )?;
@@ -46,33 +48,30 @@ impl Database {
             conn: RwLock::new(conn),
         })
     }
-
-
-
 }
-
 
 impl ActionManager for Database {
     fn create_action(&self, action: &Action) -> Result<ActionRecord> {
-        let  conn = self.conn.write();
+        let conn = self.conn.write();
         let mut args_text = String::new();
         if let Some(args) = &action.args {
             args_text = args.join(",");
         }
         let action_id = random_string(6) + "act";
-        let data =ActionData::from_action(&action);
+        // let data =ActionData::from_action(&action);
+        let data = action.clone();
         let record = ActionRecord {
             id: action_id.clone(),
             name: data.name,
             desc: data.desc,
-            wait:data.wait,
+            wait: data.wait,
             command: data.command,
             args: args_text.clone(),
-            typ: data.typ.clone(),
+            typ: ActionType::try_from(data.typ)?,
+            retry: data.retry,
         };
-        let typ_value: u8 = data.typ.into();
         conn.execute(
-            "INSERT INTO actions (id, name, desc, command, args, typ,wait)
+            "INSERT INTO actions (id, name, desc, command, args, typ,wait,retry)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             (
                 &action_id,
@@ -80,21 +79,23 @@ impl ActionManager for Database {
                 &action.desc,
                 &action.command,
                 &args_text,
-                typ_value,
-                data.wait
-            ))?;
+                &action.typ,
+                data.wait,
+                data.retry,
+            ),
+        )?;
         Ok(record)
     }
 
-    fn update_action(&self,id: &str, action: &Action) -> Result<ActionRecord> {
+    fn update_action(&self, id: &str, action: &Action) -> Result<ActionRecord> {
         let conn = self.conn.write();
         let mut args_text = String::new();
         if let Some(args) = &action.args {
             args_text = args.join(",");
         }
         conn.execute(
-            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait =?6
-            WHERE id = ?7",
+            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait =?6, retry =?7
+            WHERE id = ?8",
             (
                 &action.name,
                 &action.desc,
@@ -102,6 +103,7 @@ impl ActionManager for Database {
                 &args_text,
                 &action.typ,
                 &action.wait,
+                &action.retry,
                 id
             ))?;
         self.get_action(id)
@@ -115,7 +117,9 @@ impl ActionManager for Database {
 
     fn get_action(&self, id: &str) -> Result<ActionRecord> {
         let conn = self.conn.read();
-        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ,wait FROM actions WHERE id = ?1")?;
+        let mut stmt = conn.prepare(
+            "SELECT id, name, desc, command, args, typ,wait,retry FROM actions WHERE id = ?1",
+        )?;
         let action = stmt.query_row([id], |row| {
             let id = row.get(0)?;
             let name = row.get(1)?;
@@ -125,14 +129,16 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
+            let retry: usize = row.get(7)?;
             Ok(ActionRecord {
                 id,
                 name,
                 desc,
                 wait,
                 command,
-                args:args_text,
+                args: args_text,
                 typ,
+                retry: Some(retry),
             })
         })?;
         Ok(action)
@@ -145,13 +151,16 @@ impl ActionManager for Database {
         let conn = self.conn.read();
         let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
         let query = format!(
-            "SELECT id, name, desc, command, args, typ,wait FROM actions WHERE id IN ({})",
+            "SELECT id, name, desc, command, args, typ,wait,retry FROM actions WHERE id IN ({})",
             placeholders
         );
-        
+
         let mut stmt = conn.prepare(&query)?;
-        let params = ids.iter().map(|id| id as &dyn rusqlite::ToSql).collect::<Vec<_>>();
-        
+        let params = ids
+            .iter()
+            .map(|id| id as &dyn rusqlite::ToSql)
+            .collect::<Vec<_>>();
+
         let action_iter = stmt.query_map(params.as_slice(), |row| {
             let id = row.get(0)?;
             let name = row.get(1)?;
@@ -161,30 +170,32 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
+            let retry: usize = row.get(7)?;
             Ok(ActionRecord {
                 id,
                 name,
                 desc,
                 command,
-                args:args_text,
+                args: args_text,
                 typ,
                 wait,
+                retry: Some(retry),
             })
         })?;
-        
+
         let mut actions = Vec::new();
         for action in action_iter {
             actions.push(action?);
         }
-        
+
         Ok(actions)
     }
 
     fn get_all_actions(&self) -> anyhow::Result<Vec<crate::schema::ActionRecord>> {
         let conn = self.conn.read();
-        let mut stmt = conn.prepare("SELECT id, name, desc, command, args, typ, wait FROM actions")?;
-        
-        
+        let mut stmt =
+            conn.prepare("SELECT id, name, desc, command, args, typ, wait,retry FROM actions")?;
+
         let action_iter = stmt.query_map([], |row| {
             let id = row.get(0)?;
             let name = row.get(1)?;
@@ -194,23 +205,24 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
+            let retry: usize = row.get(7)?;
             Ok(ActionRecord {
                 id,
                 name,
                 desc,
                 command,
-                args:args_text,
+                args: args_text,
                 typ,
                 wait,
+                retry: Some(retry),
             })
         })?;
-        
+
         let mut actions = Vec::new();
         for action in action_iter {
             actions.push(action?);
         }
-        
+
         Ok(actions)
     }
 }
-

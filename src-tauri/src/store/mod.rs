@@ -1,2 +1,2 @@
 pub mod db;
-mod module;
+pub mod module;

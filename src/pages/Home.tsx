@@ -19,7 +19,7 @@ const test_action2:Action = {
     command: 'c:\\',
     args: ['-n', 'test'],
     desc: 'test',
-    wait:0,
+    wait:1,
 }
 const test_action3:Action = {
     typ:'open_file',
@@ -57,7 +57,7 @@ const test_tasks:TaskView[]=[
     {
         title:'任务 1',
         description:'关闭MuMu模拟器',
-        actions:[close_mumu_action],
+        actions:[test_action1],
         completed:false,
         createdAt:new Date(),
         dueDate:new Date(),

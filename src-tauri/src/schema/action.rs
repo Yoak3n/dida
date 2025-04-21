@@ -1,37 +1,55 @@
 use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
-#[derive(Deserialize,Serialize, Debug,Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Action {
     pub name: String,
     pub desc: String,
     pub wait: usize,
+    pub retry: Option<usize>,
     pub command: String,
     pub args: Option<Vec<String>>,
-    pub typ:String,
+    pub typ: String,
+    pub id: Option<String>,
 }
+impl TryFrom<ActionRecord> for Action {
+    type Error = anyhow::Error;
 
+    fn try_from(value: ActionRecord) -> Result<Self, Self::Error> {
+        let mut action = Action {
+            name: value.name,
+            desc: value.desc,
+            wait: value.wait,
+            command: value.command,
+            args: Some(value.args.split(",").map(|s| s.to_string()).collect()),
+            typ: "".to_string(),
+            id: Some(value.id),
+            retry: value.retry,
+        };
+        match value.typ {
+            ActionType::ExecCommand => action.typ = "exec_command".to_string(),
+            ActionType::OpenDir => action.typ = "open_dir".to_string(),
+            ActionType::OpenFile => action.typ = "open_file".to_string(),
+            ActionType::OpenUrl => action.typ = "open_url".to_string(),
+        }
+
+        Ok(action)
+    }
+}
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct ActionRecord {
     pub id: String,
-    pub typ:ActionType,
+    pub typ: ActionType,
     pub name: String,
     pub wait: usize,
+    pub retry: Option<usize>,
     pub desc: String,
     pub command: String,
     pub args: String,
 }
 
-pub struct ActionData{
-    pub name : String,
-    pub typ : ActionType,
-    pub desc : String,
-    pub wait: usize,
-    pub command : String,
-    pub args : Option<Vec<String>>,
-}
-#[derive(Deserialize,Debug,Clone)]
+#[derive(Deserialize, Debug, Clone)]
 #[repr(u8)]
 pub enum ActionType {
     OpenDir = 0,
@@ -44,10 +62,33 @@ impl From<ActionType> for u8 {
         action_type as u8
     }
 }
+impl TryFrom<String> for ActionType {
+    type Error = anyhow::Error;
 
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.as_str() {
+            "open_dir" => Ok(ActionType::OpenDir),
+            "open_file" => Ok(ActionType::OpenFile),
+            "open_url" => Ok(ActionType::OpenUrl),
+            "exec_command" => Ok(ActionType::ExecCommand),
+            _ => Err(anyhow::anyhow!("无效的 ActionType 值: {}", value)),
+        }
+    }
+}
+impl From<ActionType> for String {
+    fn from(action_type: ActionType) -> Self {
+        match action_type {
+            ActionType::OpenDir => "open_dir".to_string(),
+            ActionType::OpenFile => "open_file".to_string(),
+            ActionType::OpenUrl => "open_url".to_string(),
+            ActionType::ExecCommand => "exec_command".to_string(),
+        }
+    }
+
+}
 impl TryFrom<u8> for ActionType {
     type Error = anyhow::Error;
-    
+
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(ActionType::OpenDir),
@@ -56,25 +97,5 @@ impl TryFrom<u8> for ActionType {
             3 => Ok(ActionType::ExecCommand),
             _ => Err(anyhow::anyhow!("无效的 ActionType 值: {}", value)),
         }
-    }
-}
-impl ActionData {
-    pub fn from_action(action : &Action) -> ActionData {
-        let mut data = ActionData {
-            name: action.name.clone(),
-            desc: action.desc.clone(),
-            wait: action.wait,
-            command: action.command.clone(),
-            args: action.args.clone(),
-            typ: ActionType::ExecCommand,
-        };
-        match action.typ.as_str() {
-            "open_dir" => data.typ = ActionType::OpenDir,
-            "open_file" => data.typ = ActionType::OpenFile,
-            "open_url" => data.typ = ActionType::OpenUrl,
-            "exec_command" =>  data.typ = ActionType::ExecCommand,
-            _ => {}
-        }
-        data
     }
 }

@@ -1,6 +1,6 @@
-use crate::schema::Action;
+use crate::schema::{Action,AppState};
 use crate::feat::action::execute_action;
-use tauri::async_runtime;
+use tauri::{async_runtime,State};
 
 #[tauri::command]
 pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
@@ -16,7 +16,7 @@ pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
             let mut retry_count = 0;
             let mut last_error = String::new();
             while retry_count < max_retries {
-                match execute_action(&action).await {
+                match execute_action(action.clone()).await {
                     Ok(_) => {
                         println!("任务执行成功");
                         break; // 成功执行，跳出重试循环
@@ -45,7 +45,7 @@ pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
             let action_clone = action.clone();
             async_runtime::spawn(async move {
                 println!("异步执行任务: {}", &action_name);
-                if let Err(e) = execute_action(&action_clone).await {
+                if let Err(e) = execute_action(action_clone).await {
                     eprintln!("任务 {} 执行失败: {}", &action_name, e);
                 } else {
                     println!("任务 {} 执行成功", &action_name);
@@ -56,3 +56,18 @@ pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
     Ok(())
 }
 
+use crate::store::module::ActionManager;
+#[tauri::command]
+pub async fn get_action(state: State<'_, AppState>,id:&str) -> Result<Action, String> {
+    let res= state.db.get_action(id);
+    match res {
+        Ok(data) => {
+            let view = Action::try_from(data).unwrap();
+            Ok(view)
+        },
+        Err(e) => {
+            println!("获取action失败: {:?}", e);
+            Err(e.to_string())
+    }
+    }
+}

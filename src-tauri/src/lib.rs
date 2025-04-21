@@ -122,7 +122,8 @@ pub fn run() {
         });
     let app = builder
         .invoke_handler(tauri::generate_handler![
-            core::cmd::action::execute_actions
+            core::cmd::action::execute_actions,
+            core::cmd::action::get_action,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
