@@ -5,6 +5,7 @@ use crate::{
     config::config::Config,
     utils::logging::Type,
     core::handle,
+    process::AsyncHandler,
     logging,logging_error
 };
 #[cfg(desktop)]
@@ -40,7 +41,7 @@ pub fn create_window() {
         logging!(info, Type::Window, true, "Creating new application window");
     
         #[cfg(target_os = "windows")]
-        let _ = tauri::WebviewWindowBuilder::new(
+        let window = tauri::WebviewWindowBuilder::new(
                     &app_handle,
                     "main".to_string(),
                     tauri::WebviewUrl::App("index.html".into()),
@@ -56,6 +57,26 @@ pub fn create_window() {
                 .shadow(true)
                 .center()
                 .build();
+        match window {
+            Ok(w)=> {
+                logging!(info, Type::Window, true, "Window created successfully");
+                let app_handle_clone = app_handle.clone();
+                AsyncHandler::spawn(move || async move {
+                    // 处理启动完成
+                    handle::Handle::global().mark_startup_completed();
+                    
+                });    
+            }
+            Err(e)=>{
+                logging!(
+                    error,
+                    Type::Window,
+                    true,
+                    "Failed to create window: {:?}",
+                    e
+                );
+            }
+        }
     }
     #[cfg(mobile)]
     {

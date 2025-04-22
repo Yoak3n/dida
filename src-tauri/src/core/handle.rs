@@ -1,11 +1,13 @@
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, WebviewWindow};
+use std::time::Duration;
+use tauri::{AppHandle, Manager, WebviewWindow,Emitter};
 use tauri_plugin_notification::NotificationExt;
 use crate::{
     logging,
-    utils::logging::Type
+    utils::logging::Type,
+    process::AsyncHandler
 };
 /// 存储启动期间的错误消息
 #[derive(Debug, Clone)]
@@ -98,5 +100,48 @@ impl Handle {
             .body(&msg_str)
             .show()
             .unwrap();
+    }
+    pub fn mark_startup_completed(&self) {
+        {
+            let mut completed = self.startup_completed.write();
+            *completed = true;
+        }
+
+        self.send_startup_errors();
+    }
+    fn send_startup_errors(&self) {
+        let errors = {
+            let mut errors = self.startup_errors.write();
+            std::mem::take(&mut *errors)
+        };
+
+        if errors.is_empty() {
+            return;
+        }
+
+        logging!(
+            info,
+            Type::Frontend,
+            true,
+            "发送{}条启动时累积的错误消息",
+            errors.len()
+        );
+
+        // 等待2秒以确保前端已完全加载，延迟发送错误通知
+        if let Some(window) = self.get_window() {
+            let window_clone = window.clone();
+            let errors_clone = errors.clone();
+
+            AsyncHandler::spawn(move || async move {
+                tokio::time::sleep(Duration::from_secs(2)).await;
+
+                for error in errors_clone {
+                    let _ =
+                        window_clone.emit("verge://notice-message", (error.status, error.message));
+                    // 每条消息之间间隔500ms，避免消息堆积
+                    tokio::time::sleep(Duration::from_millis(500)).await;
+                }
+            });
+        }
     }
 }

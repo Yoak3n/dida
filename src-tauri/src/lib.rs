@@ -4,7 +4,7 @@ mod feat;
 mod utils;
 mod schema;
 mod store;
-
+mod process;
 use std::sync::{Mutex, Once,Arc};
 
 use config::config::Config;

@@ -12,28 +12,27 @@ pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
         if is_sync {
             // 同步执行 - 等待任务完成
             println!("同步执行任务: {}", &action.name);
-            let max_retries = 5; // 最大重试次数
+            let max_retries = action.retry.unwrap_or(0); // 最大重试次数
             let mut retry_count = 0;
             let mut last_error = String::new();
             while retry_count < max_retries {
                 match execute_action(action.clone()).await {
                     Ok(_) => {
                         println!("任务执行成功");
-                        break; // 成功执行，跳出重试循环
+                        break; 
                     },
                     Err(e) => {
                         last_error = e.to_string();
                         retry_count += 1;
                         if retry_count < max_retries {
                             println!("任务执行失败，正在重试 ({}/{}): {}", retry_count, max_retries, &last_error);
-                            // 重试前等待一段时间
                             tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
                         }
                     },
                 }
             }
             if retry_count >= max_retries{
-                return Err(format!("任务执行失败，已达到最大重试次数 ({}/{}): {}", max_retries, max_retries, &last_error));
+                return Err(format!("任务执行失败，已达到最大重试次数{}",&last_error));
             }
             
             // 使用异步等待而不是阻塞主线程
