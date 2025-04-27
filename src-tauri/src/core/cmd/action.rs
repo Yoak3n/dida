@@ -1,7 +1,7 @@
 use crate::schema::{Action,AppState};
 use crate::feat::action::execute_action;
-use tauri::{async_runtime,State};
-
+use tauri::{async_runtime, AppHandle, Manager, State};
+use anyhow::Result;
 #[tauri::command]
 pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
     // 创建一个 tokio 运行时来执行异步任务
@@ -69,4 +69,25 @@ pub async fn get_action(state: State<'_, AppState>,id:&str) -> Result<Action, St
             Err(e.to_string())
     }
     }
+}
+use tauri_plugin_dialog::DialogExt;
+#[tauri::command]
+pub async fn select_file(app:AppHandle,file:bool) -> Result<String, String> {
+    // let handle = app.app_handle();
+    if file{
+        let file_path = app.dialog().file().blocking_pick_file();
+        if let Some(file) = file_path {
+            return Ok(file.to_string());
+        }else{
+            return Err("未选择文件".to_string());
+        }
+    }else{
+        let file_path = app.dialog().file().blocking_pick_folder();
+        if let Some(file) = file_path {
+            return Ok(file.to_string());
+        }else{
+            return Err("未选择文件夹".to_string());
+        }
+    }
+
 }
