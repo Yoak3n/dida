@@ -5,6 +5,7 @@ import { HomeOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/ico
 const { Footer } = Layout;
 import styled from "styled-components";
 import { useNavigate, useLocation } from 'react-router-dom';
+
 const StyledFooter = styled(Footer)`
   padding: 0;
   height: 56px;
@@ -43,7 +44,7 @@ const CustomFooter: React.FC = () => {
 
     const navItems = [
         { key: '/', icon: <HomeOutlined />, label: '首页' },
-        { key: '/dashboard', icon: <AppstoreOutlined />, label: '视图' },
+        { key: '/action-modify', icon: <AppstoreOutlined />, label: '视图' },
         { key: '/settings', icon: <SettingOutlined />, label: '设置' },
       ];
     return (

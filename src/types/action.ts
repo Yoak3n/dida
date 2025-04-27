@@ -1,4 +1,4 @@
-type ActionType = 'open_file' | 'open_dir' | 'open_url' | 'exec_command';
+export type ActionType = 'open_file' | 'open_dir' | 'open_url' | 'exec_command' | '';
 
 interface IAction{
     name:string,
@@ -6,7 +6,8 @@ interface IAction{
     command:string,
     args?:string[],
     typ:ActionType,
-    wait:number
+    wait:number,
+    retry?:number,
 }
 
 // export enum ActionType{
@@ -16,5 +17,4 @@ interface IAction{
 //    EXEC_COMMAND = 'exec_command',
 
 // }
-
 export type Action = IAction;

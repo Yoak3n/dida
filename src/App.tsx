@@ -6,6 +6,7 @@ import AppLayout from './components/Layout/AppLayout';
 import Home from './pages/Home';
 import Apps from './pages/Dashboard';
 import Settings from './pages/Settings';
+import ActionModify from './pages/ActionModify';
 import './App.css';
 
 const App: React.FC = () => {
@@ -17,6 +18,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Apps />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/action-modify" element={<ActionModify />} />
+            <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </AppLayout>
       </Router>

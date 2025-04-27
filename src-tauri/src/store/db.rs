@@ -39,7 +39,7 @@ impl Database {
                 command TEXT NOT NULL,
                 args TEXT,
                 typ INTEGER NOT NULL,
-                wait INTEGER NOT NULL DEFAULT 0
+                wait INTEGER NOT NULL DEFAULT 0,
                 retry INTEGER NOT NULL DEFAULT 0
             )",
             [],
