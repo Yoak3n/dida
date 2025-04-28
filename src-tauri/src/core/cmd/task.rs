@@ -24,8 +24,8 @@ pub async fn create_task(state: State<'_, AppState>, task: TaskData) -> Result<S
 }
 
 #[tauri::command]
-pub async fn update_task(state: State<'_, AppState>, id: String, task: TaskData) -> Result<TaskRecord, String> {
-    let res = state.db.update_task(&id, &task);
+pub async fn update_task(state: State<'_, AppState>, id: &str, task: TaskData) -> Result<TaskRecord, String> {
+    let res = state.db.update_task(id, &task);
     match res {
         Ok(data) => Ok(data),
         Err(e) => {
@@ -48,10 +48,10 @@ pub async fn delete_task(state: State<'_, AppState>, id: String) -> Result<(), S
 }
 
 #[tauri::command]
-pub async fn get_task(state: State<'_, AppState>, id: String) -> Result<TaskRecord, String> {
+pub async fn get_task(state: State<'_, AppState>, id: String) -> Result<TaskView, String> {
     let res = state.db.get_task(&id);
     match res {
-        Ok(data) => Ok(data),
+        Ok(data) => Ok(TaskView::try_from((data, state.inner())).unwrap()),
         Err(e) => {
             println!("获取任务失败: {:?}", e);
             Err(e.to_string())
@@ -60,10 +60,16 @@ pub async fn get_task(state: State<'_, AppState>, id: String) -> Result<TaskReco
 }
 
 #[tauri::command]
-pub async fn get_all_tasks(state: State<'_, AppState>) -> Result<Vec<TaskRecord>, String> {
+pub async fn get_all_tasks(state: State<'_, AppState>) -> Result<Vec<TaskView>, String> {
     let res = state.db.get_all_tasks();
     match res {
-        Ok(data) => Ok(data),
+        Ok(data) => {
+            let mut tasks = Vec::new();
+            for task in data {
+                tasks.push(task.into());
+            }
+            Ok(tasks)
+        },
         Err(e) => {
             println!("获取所有任务失败: {:?}", e);
             Err(e.to_string())

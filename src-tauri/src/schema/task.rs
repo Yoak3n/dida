@@ -19,20 +19,35 @@ impl TaskRecord {
             name: self.name,
             completed: self.completed,
             desc: self.desc,
-            actions,
-            children,
+            actions:Some(actions),
+            children:Some(children),
             created_at: self.created_at,
             start_at: self.start_at,
         }
     }
 }
+impl From<TaskRecord> for TaskView  {
+    fn from(record: TaskRecord) -> Self {
+        Self {
+            id: record.id,
+            name: record.name,
+            completed: record.completed,
+            desc: record.desc,
+            actions: None,
+            children:None,
+            created_at: record.created_at,
+            start_at: record.start_at,
+        }
+    }
+}
+
 impl TryFrom<(TaskRecord, &AppState)> for TaskView {
     type Error = anyhow::Error;
 
     fn try_from((record, state): (TaskRecord, &AppState)) -> Result<Self, Self::Error> {
         // 获取关联的 actions
         let action_records = state.db.get_actions(&record.actions)?;
-        let actions = action_records.into_iter().map(|record| Action::from(record)).collect();
+        let actions = Some(action_records.into_iter().map(|record| Action::from(record)).collect());
         
         let children = state.db.get_tasks_by_parent_id(&record.id)?
             .into_iter()
@@ -45,7 +60,7 @@ impl TryFrom<(TaskRecord, &AppState)> for TaskView {
             completed: record.completed,
             desc: record.desc,
             actions,
-            children,
+            children:Some(children),
             created_at: record.created_at,
             start_at: record.start_at,
         })
@@ -70,8 +85,8 @@ pub struct TaskView {
     pub name: String,
     pub completed: bool,
     pub desc: String,
-    pub actions: Vec<Action>,
-    pub children: Vec<TaskView>,
+    pub actions: Option<Vec<Action>>,
+    pub children: Option<Vec<TaskView>>,
     pub created_at: String,
     pub start_at: Option<String>,
 }
