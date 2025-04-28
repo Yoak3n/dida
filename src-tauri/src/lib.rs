@@ -126,7 +126,14 @@ pub fn run() {
             core::cmd::action::execute_actions,
             core::cmd::action::create_action,
             core::cmd::action::get_action,
-            core::cmd::action::select_file
+            core::cmd::action::select_file,
+
+            core::cmd::task::create_task,
+            core::cmd::task::update_task,
+            core::cmd::task::delete_task,
+            core::cmd::task::get_task,
+            core::cmd::task::get_all_tasks,
+            core::cmd::task::get_tasks_uncompleted,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");

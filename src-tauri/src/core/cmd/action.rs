@@ -1,10 +1,9 @@
 use crate::schema::{Action,AppState};
 use crate::feat::action::execute_action;
-use tauri::{async_runtime, AppHandle, Manager, State};
+use tauri::{async_runtime, AppHandle, State};
 use anyhow::Result;
 #[tauri::command]
 pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
-    // 创建一个 tokio 运行时来执行异步任务
     for action in actions {
         // 检查 action 类型是否需要同步执行
         let is_sync = action.wait > 0 ;

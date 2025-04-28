@@ -4,9 +4,9 @@ use anyhow::Result;
 use parking_lot::RwLock;
 use rusqlite::Connection;
 
-use super::module::ActionManager;
+use super::module::*;
 use crate::{
-    schema::{Action, ActionRecord, ActionType},
+    schema::{Action, ActionRecord, ActionType,TaskRecord,TaskData},
     utils::help::random_string,
 };
 pub struct Database {
@@ -225,5 +225,165 @@ impl ActionManager for Database {
         }
 
         Ok(actions)
+    }
+}
+
+impl TaskManager for Database {
+    fn create_task(&self, task: &TaskData) -> Result<TaskRecord> {
+        let conn = self.conn.write();
+        let actions = serde_json::to_string(&task.actions)?;
+        
+        conn.execute(
+            "INSERT INTO tasks (id, name, desc, actions) VALUES (?1, ?2, ?3, ?4)",
+            [&task.id, &task.name, &task.desc, &actions],
+        )?;
+
+        Ok(TaskRecord {
+            id: task.id.clone(),
+            completed: false,
+            parent_id: None,
+            name: task.name.clone(),
+            desc: task.desc.clone(),
+            actions: task.actions.clone(),
+            created_at: chrono::Local::now().to_rfc3339(),
+            start_at: None,
+        })
+    }
+
+    fn update_task(&self, id: &str, task: &TaskData) -> Result<TaskRecord> {
+        let conn = self.conn.write();
+        let actions = serde_json::to_string(&task.actions)?;
+        
+        conn.execute(
+            "UPDATE tasks SET name = ?1, desc = ?2, actions = ?3 WHERE id = ?4",
+            [&task.name, &task.desc, &actions, id],
+        )?;
+
+        Ok(TaskRecord {
+            id: id.to_string(),
+            completed: false, // 保持原有状态
+            parent_id: None,  // 保持原有状态
+            name: task.name.clone(),
+            desc: task.desc.clone(),
+            actions: task.actions.clone(),
+            created_at: chrono::Local::now().to_rfc3339(),
+            start_at: None,
+        })
+    }
+
+    fn delete_task(&self, id: &str) -> Result<()> {
+        let conn = self.conn.write();
+        conn.execute("DELETE FROM tasks WHERE id = ?1", [id])?;
+        Ok(())
+    }
+
+    fn get_task(&self, id: &str) -> Result<TaskRecord> {
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, completed, parent_id, name, desc, actions, created_at, start_at FROM tasks WHERE id = ?1")?;
+        let task = stmt.query_row([id], |row| {
+            let actions: String = row.get(5)?;
+            let actions: Vec<String> = serde_json::from_str(&actions).unwrap_or_default();
+            
+            Ok(TaskRecord {
+                id: row.get(0)?,
+                completed: row.get(1)?,
+                parent_id: row.get(2)?,
+                name: row.get(3)?,
+                desc: row.get(4)?,
+                actions,
+                created_at: row.get(6)?,
+                start_at: row.get(7)?,
+            })
+        })?;
+        Ok(task)
+    }
+
+    fn get_tasks(&self, ids: &[String]) -> Result<Vec<TaskRecord>> {
+        // let conn = self.conn.read();
+        let mut tasks = Vec::new();
+        
+        for id in ids {
+            if let Ok(task) = self.get_task(id) {
+                tasks.push(task);
+            }
+        }
+        
+        Ok(tasks)
+    }
+    fn get_tasks_by_parent_id(&self, parent_id: &str) -> Result<Vec<TaskRecord>> {
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, completed, parent_id, name, desc, actions, created_at, start_at FROM tasks WHERE parent_id = ?1")?;
+        let tasks = stmt.query_map([parent_id], |row| {
+            let actions: String = row.get(5)?;
+            let actions: Vec<String> = serde_json::from_str(&actions).unwrap_or_default();
+            
+            Ok(TaskRecord {
+                id: row.get(0)?,
+                completed: row.get(1)?,
+                parent_id: row.get(2)?,
+                name: row.get(3)?,
+                desc: row.get(4)?,
+                actions,
+                created_at: row.get(6)?,
+                start_at: row.get(7)?,
+            })
+        })?;
+        
+        let mut result = Vec::new();
+        for task in tasks {
+            result.push(task?);
+        }
+        Ok(result)
+    }
+    fn get_tasks_uncompleted(&self) -> Result<Vec<TaskRecord>> {
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, completed, parent_id, name, desc, actions, created_at, start_at FROM tasks WHERE completed = 0")?;
+        let tasks = stmt.query_map([], |row| {
+            let actions: String = row.get(5)?;
+            let actions: Vec<String> = serde_json::from_str(&actions).unwrap_or_default();
+            
+            Ok(TaskRecord {
+                id: row.get(0)?,
+                completed: row.get(1)?,
+                parent_id: row.get(2)?,
+                name: row.get(3)?,
+                desc: row.get(4)?,
+                actions,
+                created_at: row.get(6)?,
+                start_at: row.get(7)?,
+            })
+        })?;
+        
+        let mut result = Vec::new();
+        for task in tasks {
+            result.push(task?);
+        }
+        Ok(result)
+    }
+
+    fn get_all_tasks(&self) -> Result<Vec<TaskRecord>> {
+        let conn = self.conn.read();
+        let mut stmt = conn.prepare("SELECT id, completed, parent_id, name, desc, actions, created_at, start_at FROM tasks")?;
+        let tasks = stmt.query_map([], |row| {
+            let actions: String = row.get(5)?;
+            let actions: Vec<String> = serde_json::from_str(&actions).unwrap_or_default();
+            
+            Ok(TaskRecord {
+                id: row.get(0)?,
+                completed: row.get(1)?,
+                parent_id: row.get(2)?,
+                name: row.get(3)?,
+                desc: row.get(4)?,
+                actions,
+                created_at: row.get(6)?,
+                start_at: row.get(7)?,
+            })
+        })?;
+        
+        let mut result = Vec::new();
+        for task in tasks {
+            result.push(task?);
+        }
+        Ok(result)
     }
 }

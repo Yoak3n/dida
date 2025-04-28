@@ -12,10 +12,16 @@ pub struct Action {
     pub typ: String,
     pub id: Option<String>,
 }
-impl TryFrom<ActionRecord> for Action {
-    type Error = anyhow::Error;
+// impl From<ActionRecord> for Action {
+//     fn from(value: ActionRecord) -> Self {
+        
+//     }
+// }
 
-    fn try_from(value: ActionRecord) -> Result<Self, Self::Error> {
+impl From<ActionRecord> for Action {
+    // type Error = anyhow::Error;
+
+    fn from(value: ActionRecord) -> Self {
         let mut action = Action {
             name: value.name,
             desc: value.desc,
@@ -33,7 +39,7 @@ impl TryFrom<ActionRecord> for Action {
             ActionType::OpenUrl => action.typ = "open_url".to_string(),
         }
 
-        Ok(action)
+        action
     }
 }
 #[allow(dead_code)]
