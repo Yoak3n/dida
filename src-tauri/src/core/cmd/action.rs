@@ -70,6 +70,21 @@ pub async fn get_action(state: State<'_, AppState>,id:&str) -> Result<Action, St
     }
     }
 }
+
+#[tauri::command]
+pub async fn create_action(state: State<'_, AppState>,action:Action) -> Result<String, String> {
+    let res= state.db.create_action(&action);
+    match res {
+        Ok(data) => {
+            Ok(data.id)
+        },
+        Err(e) => {
+            println!("创建action失败: {:?}", e);
+            Err(e.to_string())
+    }
+    }
+}
+
 use tauri_plugin_dialog::DialogExt;
 #[tauri::command]
 pub async fn select_file(app:AppHandle,file:bool) -> Result<String, String> {

@@ -71,8 +71,8 @@ impl ActionManager for Database {
             retry: data.retry,
         };
         conn.execute(
-            "INSERT INTO actions (id, name, desc, command, args, typ,wait,retry)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            "INSERT INTO actions (id, name, desc, command, args, typ, wait, retry)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
             (
                 &action_id,
                 &action.name,
@@ -94,7 +94,7 @@ impl ActionManager for Database {
             args_text = args.join(",");
         }
         conn.execute(
-            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait =?6, retry =?7
+            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait = ?6, retry = ?7
             WHERE id = ?8",
             (
                 &action.name,

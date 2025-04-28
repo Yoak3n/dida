@@ -1,6 +1,7 @@
 export type ActionType = 'open_file' | 'open_dir' | 'open_url' | 'exec_command' | '';
 
 interface IAction{
+    id?:string,
     name:string,
     desc:string,
     command:string,

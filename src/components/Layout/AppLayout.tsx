@@ -7,6 +7,7 @@ import CustomFooter from './Footer';
 const { Content } = Layout;
 
 const GlobalStyle = createGlobalStyle`
+  forced-color-adjust: none;
   @media (forced-colors: active) {
     .ant-layout,
     .ant-layout-header,

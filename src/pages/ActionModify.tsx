@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 
 import { UploadOutlined } from '@ant-design/icons';
-import { Form, Input, Select, InputNumber, Button, Tag, message, Typography, Tooltip } from "antd";
-import type { Action, ActionType } from "../types";
+import { Form, Input, Select, InputNumber, Button, Tag, Typography, Tooltip } from "antd";
 import { invoke } from '@tauri-apps/api/core';
 
+import type { Action, ActionType } from "../types";
+import SubmitActionButton from '../components/Invoke/SubmitAction';
 const { Paragraph } = Typography;
 
 const layout = {
@@ -92,7 +93,7 @@ const ActionModify: React.FC = () => {
         };
     }
     const renderCommandInput = () => {
-        const typeConfig: TypeConfig = {
+        const typeConfig:TypeConfig =  ({
             'open_file': {
                 label: 'Path',
                 component: (
@@ -137,13 +138,13 @@ const ActionModify: React.FC = () => {
                     />
                 )
             }
-        };
+        });
 
         const type = form.getFieldValue('typ') as keyof TypeConfig;
         const config = typeConfig[type];
 
         return config ? (
-            <Form.Item label={config.label} name="command" initialValue={action.command}>
+            <Form.Item label={config.label}  initialValue={action.command}>
                 {config.component}
             </Form.Item>
         ) : null;
@@ -152,12 +153,12 @@ const ActionModify: React.FC = () => {
     return (
         <div className="action-modify" >
             <h1>Modify Action</h1>
-            <Form {...layout} onFinish={handleSubmit} form={form} style={{ maxWidth: 600 }}>
-                <Form.Item label="Action Name" name="name">
-                    <Input type="text" name="title" value={action.name} onChange={handleInputChange} placeholder='Action Name' />
+            <Form {...layout} onFinish={handleSubmit} form={form} style={{ maxWidth: 600 }} requiredMark={false}>
+                <Form.Item label="Action Name" name="name" rules={[{ required: true, message: 'Please input the action name!' }]}>
+                    <Input type="text" name="name" value={action.name} onChange={handleInputChange} placeholder='Action Name' autoComplete='off' />
                 </Form.Item >
-                <Form.Item label="Description" name="description" initialValue={action.desc}>
-                    <Input type="text" name="description" value={action.desc} onChange={handleInputChange} />
+                <Form.Item label="Description" name="desc" initialValue={action.desc}>
+                    <Input type="text" name="desc" value={action.desc} onChange={handleInputChange} />
                 </Form.Item >
                 <Form.Item noStyle shouldUpdate={(prevValues, curValues) => prevValues.typ !== curValues.typ}>
                     {() => renderCommandInput()}
@@ -187,11 +188,7 @@ const ActionModify: React.FC = () => {
                 </Form.Item >
 
                 <Form.Item wrapperCol={{ offset: 14, span: 16 }}>
-                    <Button type="primary" onClick={() => {
-                        message.success('Success!');
-                    }} >
-                        Submit
-                    </Button>
+                    <SubmitActionButton data={action} />
                 </Form.Item>
             </Form>
         </div>

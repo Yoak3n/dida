@@ -124,6 +124,7 @@ pub fn run() {
     let app = builder
         .invoke_handler(tauri::generate_handler![
             core::cmd::action::execute_actions,
+            core::cmd::action::create_action,
             core::cmd::action::get_action,
             core::cmd::action::select_file
         ])
