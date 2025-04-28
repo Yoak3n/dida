@@ -21,6 +21,7 @@ impl Database {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS tasks (
                 id TEXT PRIMARY KEY,
+                completed INTEGER DEFAULT 0,
                 parent_id TEXT,
                 name TEXT NOT NULL,
                 desc TEXT,

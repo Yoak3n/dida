@@ -44,7 +44,7 @@ const CustomFooter: React.FC = () => {
 
     const navItems = [
         { key: '/', icon: <HomeOutlined />, label: '首页' },
-        { key: '/action-modify', icon: <AppstoreOutlined />, label: '视图' },
+        { key: '/task-modify', icon: <AppstoreOutlined />, label: '视图' },
         { key: '/settings', icon: <SettingOutlined />, label: '设置' },
       ];
     return (

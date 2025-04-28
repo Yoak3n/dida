@@ -181,10 +181,31 @@ const ActionModify: React.FC = () => {
                     />
                 </Form.Item>
                 <Form.Item label="Wait" name="wait" initialValue={action.wait}>
-                    <InputNumber name="wait" suffix="ms" value={action.wait} style={{ width: '100%' }} />
+                    <InputNumber 
+                    onChange={(v)=>{
+                        setAction((prevAction) => ({
+                          ...prevAction,
+                            wait: v as number,
+                        }));
+                    }}
+                    name="wait" 
+                    suffix="ms" 
+                    value={action.wait} 
+                    style={{ width: '100%' }} />
                 </Form.Item >
                 <Form.Item label="Retry" name="retry" initialValue={action.retry} >
-                    <InputNumber type="text" name="retry" suffix="times" value={action.retry} style={{ width: '100%' }} />
+                    <InputNumber 
+                    onChange={(v)=>{
+                        setAction((prevAction) => ({
+                           ...prevAction,
+                            retry: v as number,
+                        }));
+                    }}
+                    type="text" 
+                    name="retry" 
+                    suffix="times" 
+                    value={action.retry} 
+                    style={{ width: '100%' }} />
                 </Form.Item >
 
                 <Form.Item wrapperCol={{ offset: 14, span: 16 }}>

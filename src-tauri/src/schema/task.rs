@@ -3,6 +3,7 @@ use serde::{Deserialize,Serialize};
 #[derive(Deserialize,Serialize, Debug)]
 pub struct TaskRecord {
     pub id: String,
+    pub completed: bool,
     pub parent_id: Option<String>,
     pub name: String,
     pub desc: String,
