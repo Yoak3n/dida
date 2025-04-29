@@ -61,16 +61,8 @@ impl ActionManager for Database {
         let action_id = random_string(6) + "act";
         // let data =ActionData::from_action(&action);
         let data = action.clone();
-        let record = ActionRecord {
-            id: action_id.clone(),
-            name: data.name,
-            desc: data.desc,
-            wait: data.wait,
-            command: data.command,
-            args: args_text.clone(),
-            typ: ActionType::try_from(data.typ)?,
-            retry: data.retry,
-        };
+        let typ:ActionType = ActionType::try_from(data.typ.as_str())?;
+
         conn.execute(
             "INSERT INTO actions (id, name, desc, command, args, typ, wait, retry)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
@@ -80,11 +72,21 @@ impl ActionManager for Database {
                 &action.desc,
                 &action.command,
                 &args_text,
-                &action.typ,
+                &(typ.clone() as i8),
                 data.wait,
                 data.retry,
             ),
         )?;
+        let record = ActionRecord {
+            id: action_id.clone(),
+            name: data.name,
+            desc: data.desc,
+            wait: data.wait,
+            command: data.command,
+            args: args_text.clone(),
+            typ,
+            retry: data.retry,
+        };
         Ok(record)
     }
 
@@ -102,7 +104,7 @@ impl ActionManager for Database {
                 &action.desc,
                 &action.command,
                 &args_text,
-                &action.typ,
+                (ActionType::try_from(action.typ.as_str())? as u8),
                 &action.wait,
                 &action.retry,
                 id

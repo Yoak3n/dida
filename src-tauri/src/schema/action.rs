@@ -68,11 +68,11 @@ impl From<ActionType> for u8 {
         action_type as u8
     }
 }
-impl TryFrom<String> for ActionType {
+impl TryFrom<&str> for ActionType {
     type Error = anyhow::Error;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "open_dir" => Ok(ActionType::OpenDir),
             "open_file" => Ok(ActionType::OpenFile),
             "open_url" => Ok(ActionType::OpenUrl),
