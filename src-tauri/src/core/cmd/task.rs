@@ -4,7 +4,8 @@ use crate::{
         AppState,
         task::{TaskRecord, TaskView,TaskData}
     },
-    store::module::TaskManager
+    store::module::TaskManager,
+    utils::help::random_string
 };
 
 
@@ -89,6 +90,12 @@ pub async fn get_tasks_uncompleted(state: State<'_, AppState>) -> Result<Vec<Tas
     }
 }
 
+#[tauri::command]
+pub async fn gen_random_task_id() -> Result<String, String> {
+    
+    let random_str = random_string(6) + "task";
+    Ok(random_str)
+}
 // #[tauri::command]
 // pub async fn execute_task_actions(state: State<'_, AppState>, id: String) -> Result<(), String> {
 //     let task = state.db.get_task(&id).map_err(|e| e.to_string())?;

@@ -131,6 +131,7 @@ pub fn run() {
             core::cmd::action::select_file,
             // Tasks
             core::cmd::task::create_task,
+            core::cmd::task::gen_random_task_id,
             core::cmd::task::update_task,
             core::cmd::task::delete_task,
             core::cmd::task::get_task,
