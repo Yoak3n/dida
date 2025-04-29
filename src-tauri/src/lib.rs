@@ -123,11 +123,13 @@ pub fn run() {
         });
     let app = builder
         .invoke_handler(tauri::generate_handler![
+            // Actions
             core::cmd::action::execute_actions,
             core::cmd::action::create_action,
             core::cmd::action::get_action,
+            core::cmd::action::get_all_actions,
             core::cmd::action::select_file,
-
+            // Tasks
             core::cmd::task::create_task,
             core::cmd::task::update_task,
             core::cmd::task::delete_task,

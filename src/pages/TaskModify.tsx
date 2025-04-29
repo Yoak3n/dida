@@ -9,6 +9,16 @@ interface TaskModifyProps {
     onSubmit?: () => void;
 }
 
+const getActions = async () => {
+    try {
+        const actions = await invoke('get_all_actions');
+        return actions as Action[];
+    } catch (error) {
+        console.error('Error fetching actions:', error);
+        return [];
+    }
+}
+
 const TaskModify: React.FC<TaskModifyProps> = ({ task, onSubmit }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
@@ -93,6 +103,11 @@ const TaskModify: React.FC<TaskModifyProps> = ({ task, onSubmit }) => {
                             mode="multiple"
                             placeholder="选择关联动作"
                             style={{ width: '100%' }}
+                            onFocus={async () => {
+                                const actions = await getActions();
+                                form.setFieldsValue({ actions: actions.map(action => action.id) });
+                            }}
+                            options={form.getFieldValue('actions')}
                         />
                     </Form.Item>
 

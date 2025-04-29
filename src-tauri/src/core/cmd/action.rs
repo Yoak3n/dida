@@ -103,5 +103,19 @@ pub async fn select_file(app:AppHandle,file:bool) -> Result<String, String> {
             return Err("未选择文件夹".to_string());
         }
     }
+}
 
+#[tauri::command]
+pub async fn get_all_actions(state: State<'_, AppState>) -> Result<Vec<Action>, String> {
+    let res = state.db.get_all_actions();
+    match res {
+        Ok(data) => {
+            let views = Vec::from_iter(data.into_iter().map(|item| Action::try_from(item).unwrap()));
+            Ok(views)
+        },
+        Err(e) => {
+            println!("获取actions失败: {:?}", e);
+            Err(e.to_string())
+        }
+    }
 }

@@ -59,9 +59,9 @@ pub struct ActionRecord {
 #[repr(u8)]
 pub enum ActionType {
     OpenDir = 0,
-    OpenFile,
-    OpenUrl,
-    ExecCommand,
+    OpenFile= 1,
+    OpenUrl = 2,
+    ExecCommand = 3,
 }
 impl From<ActionType> for u8 {
     fn from(action_type: ActionType) -> Self {
