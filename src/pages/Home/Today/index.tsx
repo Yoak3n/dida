@@ -1,8 +1,9 @@
-import React, { useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useCallback } from 'react';
 import {Card, List, Avatar,Button,FloatButton, message } from 'antd';
+import { invoke } from "@tauri-apps/api/core";
 
-import {TaskView,Action} from '../types'
+
+import {TaskView,Action} from '@/types'
 
 
 const test_action1:Action = {
@@ -55,32 +56,32 @@ const close_mumu_action: Action = {
 }
 const test_tasks:TaskView[]=[
     {
-        title:'任务 1',
-        description:'关闭MuMu模拟器',
+        name:'任务 1',
+        desc:'关闭MuMu模拟器',
         actions:[test_action1],
         completed:false,
         createdAt:new Date(),
         dueDate:new Date(),
         avatar:'https://api.dicebear.com/7.x/avataaars/svg?seed=task1'
     },{
-        title: '任务 2',
-        description: '实现自定义标题栏',
+        name: '任务 2',
+        desc: '实现自定义标题栏',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task2',
         actions:[test_action2],
         completed: false,
         createdAt: new Date(),
         dueDate: new Date(),
     },{
-        title: '任务 3',
-        description: '添加页面导航功能',
+        name: '任务 3',
+        desc: '添加页面导航功能',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task3',
         actions:[test_action5],
         completed: false,
         createdAt: new Date(),
         dueDate: new Date(),
     },{
-        title: '任务 4',
-        description: '早起学习',
+        name: '任务 4',
+        desc: '早起学习',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=task4',
         actions:[test_action3,test_action4],
         completed: false,
@@ -89,8 +90,8 @@ const test_tasks:TaskView[]=[
     },
 ]
 
+const Today:React.FC = () => {
 
-const Home: React.FC = () => {
     const [messageApi, contextHolder] = message.useMessage();
     const handleClick = useCallback(async(actions:Action[]) => {
         // console.log('Button clicked!', desc);
@@ -131,9 +132,9 @@ const Home: React.FC = () => {
                                         handleClick(item.actions)
                                     }
                                     }>
-                                        {item.title}
+                                        {item.name}
                                         </Button>}
-                                description={item.description}
+                                description={item.desc}
                             />
                         </List.Item>
                     )}
@@ -144,5 +145,4 @@ const Home: React.FC = () => {
     )
 
 }
-
-export default Home
+export default Today

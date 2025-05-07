@@ -153,7 +153,7 @@ const ActionModify: React.FC = () => {
     return (
         <div className="action-modify" >
             <h1>Modify Action</h1>
-            <Form {...layout} onFinish={handleSubmit} form={form} style={{ maxWidth: 600 }} requiredMark={false}>
+            <Form {...layout} onFinish={handleSubmit} form={form} style={{ maxWidth: 600 }} requiredMark={false} autoComplete='off'>
                 <Form.Item label="Action Name" name="name" rules={[{ required: true, message: 'Please input the action name!' }]}>
                     <Input type="text" name="name" value={action.name} onChange={handleInputChange} placeholder='Action Name' autoComplete='off' />
                 </Form.Item >
