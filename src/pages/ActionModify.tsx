@@ -4,9 +4,10 @@ import { UploadOutlined } from '@ant-design/icons';
 import { Form, Input, Select, InputNumber, Button, Tag, Typography, Tooltip } from "antd";
 import { invoke } from '@tauri-apps/api/core';
 
-import type { Action, ActionType } from "../types";
+import type { Action } from "../types";
 // import SubmitActionButton from '../components/Invoke/SubmitAction';
 import {simplifyPath} from '@/utils'
+import { useNavigate } from 'react-router-dom';
 const { Paragraph } = Typography;
 
 const layout = {
@@ -16,7 +17,7 @@ const layout = {
 
 const ActionModify: React.FC = () => {
     const [form] = Form.useForm();
-    
+    const navigate = useNavigate();
     const initialValues: Action = {
         name: "",
         desc: "",
@@ -34,26 +35,16 @@ const ActionModify: React.FC = () => {
         { value: "open_url", label: "Open URL" },
     ];
 
-    const handleSelectTypeChange = (value: ActionType) => {
-        switch (value) {
-            case "open_file":
-                form.setFieldsValue({ note: 'Hi, man!' });
-                break;
-            case "exec_command":
-                // Handle click type change
-                break;
-            case "open_dir":
-                break;
-            case "open_url":
-                break;
-            default:
-                break;
-        }
-    };
-
-    const handleSubmit = (values: Action) => {
+    const handleSubmit = async (values: Action) => {
         console.log('Form values:', values);
-        // 这里可以处理表单提交逻辑
+        invoke("create_action", { action: values }).then((res) => {
+            console.log(res);
+            navigate(-1)
+        }).catch((err) => {
+            console.log(err);
+        });
+
+        
     };
 
     interface TypeConfig {
@@ -161,7 +152,6 @@ const ActionModify: React.FC = () => {
                 <Form.Item label="Type" name="typ">
                     <Select
                         options={actionTypeOptions}
-                        onChange={handleSelectTypeChange}
                         placeholder="Select a option and change input text above"
                         allowClear
                     />

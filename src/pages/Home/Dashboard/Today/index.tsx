@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback,useContext } from 'react';
 import {Card, List, Avatar,Button,FloatButton, message } from 'antd';
 import { invoke } from "@tauri-apps/api/core";
-
+import Msg from "@/components/Context/Msg";
 
 import {TaskView,Action} from '@/types'
 
@@ -93,28 +93,27 @@ const test_tasks:TaskView[]=[
 
 const Today:React.FC = () => {
 
-    const [messageApi, contextHolder] = message.useMessage();
+    const MsgContext = useContext(Msg);
     const handleClick = useCallback(async(actions:Action[]) => {
         // console.log('Button clicked!', desc);
         try{
             const res = await invoke('execute_actions',{actions:actions})
-            messageApi.open({
+            MsgContext?.messageApi.open({
                 type: 'success',
                 content: res as string,
                 duration: 2,
             });
         }catch(err){
-            messageApi.open({
+            MsgContext?.messageApi.open({
                 type: 'error',
                 content: err as string,
                 duration: 2,
             });
         }
         
-    },[messageApi]);
+    },[MsgContext?.messageApi]);
     return (
         <>
-            {contextHolder} 
             <Card title="今日任务" style={{ marginTop: 16 }}>
                 <List
                     itemLayout="horizontal"
