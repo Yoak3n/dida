@@ -5,10 +5,10 @@ import { Outlet, useNavigate } from "react-router-dom";
 const Home: React.FC = () => {
     const navigate = useNavigate();
     useEffect(() => {
+        // 手动重定向
         const path = window.location.pathname;
-        console.log(path);
         if (path === "/") {
-        navigate("/dashboard");
+            navigate("/dashboard");
         }
     }, []);
     return (

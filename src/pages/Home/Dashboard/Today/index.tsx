@@ -21,6 +21,7 @@ const test_action2:Action = {
     args: ['-n', 'test'],
     desc: 'test',
     wait:1,
+    retry: 0
 }
 const test_action3:Action = {
     typ:'open_file',

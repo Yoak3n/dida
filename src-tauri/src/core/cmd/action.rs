@@ -2,35 +2,64 @@ use crate::schema::{Action,AppState};
 use crate::feat::action::execute_action;
 use tauri::{async_runtime, AppHandle, State};
 use anyhow::Result;
+use tokio::time::timeout;
+use std::time::Duration;
+
 #[tauri::command]
 pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
     for action in actions {
         // 检查 action 类型是否需要同步执行
         let is_sync = action.wait > 0 ;
-        
+        println!("{:?}",action);
         if is_sync {
             // 同步执行 - 等待任务完成
             println!("同步执行任务: {}", &action.name);
             let max_retries = action.retry.unwrap_or(0); // 最大重试次数
             let mut retry_count = 0;
             let mut last_error = String::new();
-            while retry_count < max_retries {
-                match execute_action(action.clone()).await {
-                    Ok(_) => {
-                        println!("任务执行成功");
-                        break; 
-                    },
-                    Err(e) => {
-                        last_error = e.to_string();
-                        retry_count += 1;
-                        if retry_count < max_retries {
-                            println!("任务执行失败，正在重试 ({}/{}): {}", retry_count, max_retries, &last_error);
-                            tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+            
+            // 获取超时时间，如果未设置则使用默认值（例如30秒）
+            let timeout_duration = Duration::from_secs(action.timeout.unwrap_or(30));
+            
+            while retry_count <= max_retries {
+                // 使用 timeout 包装 execute_action 调用
+                match timeout(timeout_duration, execute_action(action.clone())).await {
+                    Ok(result) => {
+                        // 任务在超时前完成
+                        match result {
+                            Ok(_) => {
+                                println!("任务执行成功");
+                                break;
+                            },
+                            Err(e) => {
+                                last_error = e.to_string();
+                                if max_retries <= 0 {
+                                    return Err(format!("任务执行失败:{}",&last_error));
+                                }
+                                retry_count += 1;
+                                if retry_count < max_retries {
+                                    println!("任务执行失败，正在重试 ({}/{}): {}", retry_count, max_retries, &last_error);
+                                    tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+                                }
+                            }
                         }
                     },
+                    Err(_) => {
+                        // 任务超时
+                        last_error = format!("任务执行超时（{}秒）", timeout_duration.as_secs());
+                        if max_retries <= 0 {
+                            return Err(format!("任务执行失败:{}",&last_error));
+                        }
+                        retry_count += 1;
+                        if retry_count < max_retries {
+                            println!("任务执行超时，正在重试 ({}/{}): {}", retry_count, max_retries, &last_error);
+                            tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+                        }
+                    }
                 }
             }
-            if retry_count >= max_retries{
+            
+            if retry_count > max_retries{
                 return Err(format!("任务执行失败，已达到最大重试次数{}",&last_error));
             }
             
@@ -41,12 +70,21 @@ pub async fn execute_actions(actions: Vec<Action>) -> Result<(), String> {
             // 异步执行 - 不等待任务完成
             let action_name = action.name.clone();
             let action_clone = action.clone();
+            let timeout_duration = Duration::from_secs(action.timeout.unwrap_or(30));
+            
             async_runtime::spawn(async move {
                 println!("异步执行任务: {}", &action_name);
-                if let Err(e) = execute_action(action_clone).await {
-                    eprintln!("任务 {} 执行失败: {}", &action_name, e);
-                } else {
-                    println!("任务 {} 执行成功", &action_name);
+                match timeout(timeout_duration, execute_action(action_clone)).await {
+                    Ok(result) => {
+                        if let Err(e) = result {
+                            eprintln!("任务 {} 执行失败: {}", &action_name, e);
+                        } else {
+                            println!("任务 {} 执行成功", &action_name);
+                        }
+                    },
+                    Err(_) => {
+                        eprintln!("任务 {} 执行超时（{}秒）", &action_name, timeout_duration.as_secs());
+                    }
                 }
             });
         }

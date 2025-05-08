@@ -41,7 +41,8 @@ impl Database {
                 args TEXT,
                 typ INTEGER NOT NULL,
                 wait INTEGER NOT NULL DEFAULT 0,
-                retry INTEGER NOT NULL DEFAULT 0
+                retry INTEGER NOT NULL DEFAULT 0,
+                timeout INTEGER
             )",
             [],
         )?;
@@ -64,8 +65,8 @@ impl ActionManager for Database {
         let typ:ActionType = ActionType::try_from(data.typ.as_str())?;
 
         conn.execute(
-            "INSERT INTO actions (id, name, desc, command, args, typ, wait, retry)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            "INSERT INTO actions (id, name, desc, command, args, typ, wait, retry, timeout)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             (
                 &action_id,
                 &action.name,
@@ -75,6 +76,7 @@ impl ActionManager for Database {
                 &(typ.clone() as i8),
                 data.wait,
                 data.retry,
+                data.timeout
             ),
         )?;
         let record = ActionRecord {
@@ -86,6 +88,7 @@ impl ActionManager for Database {
             args: args_text.clone(),
             typ,
             retry: data.retry,
+            timeout: data.timeout,
         };
         Ok(record)
     }
@@ -97,8 +100,8 @@ impl ActionManager for Database {
             args_text = args.join(",");
         }
         conn.execute(
-            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait = ?6, retry = ?7
-            WHERE id = ?8",
+            "UPDATE actions SET name = ?1, desc = ?2, command = ?3, args = ?4, typ = ?5,wait = ?6, retry = ?7, timeout =?8
+            WHERE id = ?9",
             (
                 &action.name,
                 &action.desc,
@@ -107,6 +110,7 @@ impl ActionManager for Database {
                 (ActionType::try_from(action.typ.as_str())? as u8),
                 &action.wait,
                 &action.retry,
+                &action.timeout,
                 id
             ))?;
         self.get_action(id)
@@ -121,7 +125,9 @@ impl ActionManager for Database {
     fn get_action(&self, id: &str) -> Result<ActionRecord> {
         let conn = self.conn.read();
         let mut stmt = conn.prepare(
-            "SELECT id, name, desc, command, args, typ,wait,retry FROM actions WHERE id = ?1",
+            "SELECT 
+            id, name, desc, command, args, typ, wait, retry, timeout 
+            FROM actions WHERE id = ?1",
         )?;
         let action = stmt.query_row([id], |row| {
             let id = row.get(0)?;
@@ -132,7 +138,8 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
-            let retry: usize = row.get(7)?;
+            let retry: Option<usize> = row.get(7)?;
+            let timeout: Option<u64> = row.get(8)?;
             Ok(ActionRecord {
                 id,
                 name,
@@ -141,7 +148,8 @@ impl ActionManager for Database {
                 command,
                 args: args_text,
                 typ,
-                retry: Some(retry),
+                retry,
+                timeout,
             })
         })?;
         Ok(action)
@@ -154,7 +162,9 @@ impl ActionManager for Database {
         let conn = self.conn.read();
         let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
         let query = format!(
-            "SELECT id, name, desc, command, args, typ,wait,retry FROM actions WHERE id IN ({})",
+            "SELECT 
+            id, name, desc, command, args, typ, wait, retry, timeout
+            FROM actions WHERE id IN ({})",
             placeholders
         );
 
@@ -173,7 +183,8 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
-            let retry: usize = row.get(7)?;
+            let retry: Option<usize> = row.get(7)?;
+            let timeout: Option<u64> = row.get(8)?;
             Ok(ActionRecord {
                 id,
                 name,
@@ -182,7 +193,8 @@ impl ActionManager for Database {
                 args: args_text,
                 typ,
                 wait,
-                retry: Some(retry),
+                retry,
+                timeout,
             })
         })?;
 
@@ -197,7 +209,9 @@ impl ActionManager for Database {
     fn get_all_actions(&self) -> anyhow::Result<Vec<crate::schema::ActionRecord>> {
         let conn = self.conn.read();
         let mut stmt =
-            conn.prepare("SELECT id, name, desc, command, args, typ, wait,retry FROM actions")?;
+            conn.prepare("SELECT 
+            id, name, desc, command, args, typ, wait, retry, timeout 
+            FROM actions")?;
 
         let action_iter = stmt.query_map([], |row| {
             let id = row.get(0)?;
@@ -208,7 +222,8 @@ impl ActionManager for Database {
             let typ_number: u8 = row.get(5)?;
             let typ = ActionType::try_from(typ_number).unwrap_or(ActionType::ExecCommand);
             let wait = row.get(6)?;
-            let retry: usize = row.get(7)?;
+            let retry: Option<usize> = row.get(7)?;
+            let timeout: Option<u64> = row.get(8)?;
             Ok(ActionRecord {
                 id,
                 name,
@@ -217,7 +232,8 @@ impl ActionManager for Database {
                 args: args_text,
                 typ,
                 wait,
-                retry: Some(retry),
+                retry,
+                timeout,
             })
         })?;
 

@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Home/Dashboard";
 
 import Today from "@/pages/Home/Dashboard/Today";
 import Monthly from "@/pages/Home/Dashboard/Monthly";
+import Weekly from "@/pages/Home/Dashboard/Weekly";
 const router = createBrowserRouter(
     [
         {
@@ -23,6 +24,9 @@ const router = createBrowserRouter(
                         },{
                             path: "/dashboard/monthly",
                             element: <Monthly />,
+                        },{
+                            path: "/dashboard/weekly",
+                            element: <Weekly />,
                         }
                     ]
                 },{

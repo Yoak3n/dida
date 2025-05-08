@@ -9,6 +9,7 @@ interface IAction{
     typ:ActionType,
     wait:number,
     retry?:number,
+    timeout?:number,
 }
 
 // export enum ActionType{

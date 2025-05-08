@@ -13,7 +13,7 @@ const  SubmitActionButton:React.FC<PropsType> = ({data}) =>{
 
     return (
         <div className="submit-action">
-            <Button type="primary" onClick={() => SubmitAction(data)}>
+            <Button type="primary" onClick={() => SubmitAction(data)} htmlType="submit">
                 Submit
             </Button>
         </div>

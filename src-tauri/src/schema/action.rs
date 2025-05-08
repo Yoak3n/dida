@@ -7,6 +7,7 @@ pub struct Action {
     pub desc: String,
     pub wait: usize,
     pub retry: Option<usize>,
+    pub timeout: Option<u64>,
     pub command: String,
     pub args: Option<Vec<String>>,
     pub typ: String,
@@ -31,6 +32,7 @@ impl From<ActionRecord> for Action {
             typ: "".to_string(),
             id: Some(value.id),
             retry: value.retry,
+            timeout: value.timeout,
         };
         match value.typ {
             ActionType::ExecCommand => action.typ = "exec_command".to_string(),
@@ -49,6 +51,7 @@ pub struct ActionRecord {
     pub typ: ActionType,
     pub name: String,
     pub wait: usize,
+    pub timeout: Option<u64>,
     pub retry: Option<usize>,
     pub desc: String,
     pub command: String,
