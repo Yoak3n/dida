@@ -17,7 +17,7 @@ const test_action1:Action = {
 const test_action2:Action = {
     typ:'open_dir',
     name:'打开C盘',
-    command: 'c:\\',
+    command: 'C:\\',
     args: ['-n', 'test'],
     desc: 'test',
     wait:1,
@@ -97,16 +97,12 @@ const Today:React.FC = () => {
         // console.log('Button clicked!', desc);
         try{
             const res = await invoke('execute_actions',{actions:actions})
-            console.log(res);
-            
             messageApi.open({
                 type: 'success',
                 content: res as string,
                 duration: 2,
             });
         }catch(err){
-            console.log(err);
-            
             messageApi.open({
                 type: 'error',
                 content: err as string,

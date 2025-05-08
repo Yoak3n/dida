@@ -43,7 +43,7 @@ const CustomFooter: React.FC = () => {
     const currentPath = location.pathname;
 
     const navItems = [
-        { key: '/', icon: <HomeOutlined />, label: '首页' },
+        { key: '/dashboard', icon: <HomeOutlined />, label: '首页' },
         { key: '/action-modify', icon: <AppstoreOutlined />, label: '视图' },
         { key: '/settings', icon: <SettingOutlined />, label: '设置' },
       ];
