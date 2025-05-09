@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Badge, Card, Tooltip, Modal, List } from 'antd';
+import { Calendar, Badge, Card, Modal, List } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
@@ -7,7 +7,9 @@ import styled from 'styled-components';
 
 const StyledCalendarCard = styled(Card)`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
+  .ant-card-body {
+    padding: 5px;
+  }
   .ant-picker-calendar-header {
     padding: 12px 16px;
   }

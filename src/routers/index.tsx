@@ -22,10 +22,10 @@ const router = createBrowserRouter(
                             index: true,
                             element: <Today />
                         },{
-                            path: "/dashboard/monthly",
+                            path: "monthly",
                             element: <Monthly />,
                         },{
-                            path: "/dashboard/weekly",
+                            path: "weekly",
                             element: <Weekly />,
                         }
                     ]

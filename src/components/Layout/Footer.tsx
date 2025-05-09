@@ -41,7 +41,7 @@ const CustomFooter: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const currentPath = location.pathname;
-
+    console.log('currentPath', currentPath);
     const navItems = [
         { key: '/dashboard', icon: <HomeOutlined />, label: '首页' },
         { key: '/action-modify', icon: <AppstoreOutlined />, label: '视图' },
@@ -52,7 +52,7 @@ const CustomFooter: React.FC = () => {
         {navItems.map(item => (
           <NavItem 
             key={item.key} 
-            $active={currentPath === item.key}
+            $active={currentPath.startsWith(item.key)}
             onClick={() => navigate(item.key)}
           >
             <IconWrapper>{item.icon}</IconWrapper>

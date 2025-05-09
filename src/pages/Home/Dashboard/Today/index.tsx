@@ -1,9 +1,10 @@
 import { useCallback,useContext } from 'react';
-import {Card, List, Avatar,Button,FloatButton, message } from 'antd';
+import {Card, List, Avatar,Button } from 'antd';
 import { invoke } from "@tauri-apps/api/core";
 import Msg from "@/components/Context/Msg";
 
 import {TaskView,Action} from '@/types'
+import TaskList from '@/components/TaskList';
 
 
 const test_action1:Action = {
@@ -115,28 +116,9 @@ const Today:React.FC = () => {
     return (
         <>
             <Card title="今日任务" style={{ marginTop: 16 }}>
-                <List
-                    itemLayout="horizontal"
-                    dataSource={test_tasks}
-                    renderItem={item => (
-                        <List.Item>
-                            <List.Item.Meta
-                                avatar={<Avatar src={item.avatar} />}
-                                title={<Button color="default" variant="text" onClick={
-                                    (e)=>{
-                                        e.stopPropagation()
-                                        handleClick(item.actions)
-                                    }
-                                    }>
-                                        {item.name}
-                                        </Button>}
-                                description={item.desc}
-                            />
-                        </List.Item>
-                    )}
-                />
+                <TaskList tasks={test_tasks} />
             </Card>
-            <FloatButton onClick={()=>{console.log('FloatButton clicked!')}}/>
+
         </>
     )
 

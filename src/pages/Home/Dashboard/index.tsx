@@ -1,4 +1,4 @@
-import { Outlet, useNavigate} from "react-router-dom";
+import { Outlet, useNavigate, useLocation} from "react-router-dom";
 import { Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 
@@ -22,9 +22,10 @@ const Dashboard = () => {
     const onChange = (key: string) => {
         navigate(key);
     };
+    const location = useLocation();
     return (
         <>
-            <Tabs defaultActiveKey="/dashboard" items={items} onChange={onChange} />
+            <Tabs defaultActiveKey="/dashboard/" items={items} onChange={onChange} activeKey={location.pathname} />
             <Outlet />
         </>
     );

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Layout } from 'antd';
+import { FloatButton, Layout } from 'antd';
 import styled, { createGlobalStyle } from 'styled-components';
 import CustomHeader from './Header';
 import CustomFooter from './Footer';
+import { useNavigate,useLocation } from 'react-router-dom';
 
 const { Content } = Layout;
 
@@ -20,6 +21,7 @@ const GlobalStyle = createGlobalStyle`
 
 const StyledLayout = styled(Layout)`
   height: 100vh;
+  position: relative;
   display: flex;
   flex-direction: column;
 `;
@@ -35,6 +37,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+  const navigate = useNavigate()
   return (
     <>
       <GlobalStyle />
@@ -42,6 +45,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <CustomHeader />
         <StyledContent>{children}</StyledContent>
         <CustomFooter />
+        <div className="float">
+          <FloatButton.Group
+            trigger="hover"
+            style={{ insetInlineEnd: 50, position: 'absolute', top: 80 ,height: 50}}
+            placement="bottom"
+          >
+            <FloatButton icon={<span>📊</span>} tooltip="图表" onClick={() => { console.log('FloatButton clicked!') }}/>
+            <FloatButton icon={<span>⚙️</span>} tooltip="设置" onClick={() => { console.log('FloatButton clicked!') }} />
+            <FloatButton icon={<span>◀</span>} tooltip="返回" onClick={() => { navigate(-1)}} />
+          </FloatButton.Group>
+        </div>
+
       </StyledLayout>
     </>
   );
