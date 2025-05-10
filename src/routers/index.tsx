@@ -40,7 +40,7 @@ const router = createBrowserRouter(
                 }
             ],
         },{
-            path: "/task/:id",
+            path: "/task",
             element: <TaskModify />
         },{
             path: "*",

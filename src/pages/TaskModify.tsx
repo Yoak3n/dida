@@ -1,5 +1,5 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Form, Input, Button, DatePicker, Switch, Card, message, Select } from 'antd';
 import dayjs from 'dayjs';
 
@@ -23,8 +23,14 @@ const getActions = async () => {
 const TaskModify: React.FC<TaskModifyProps> = ({ task, onSubmit }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
-    const { id } = useParams();
-
+    const [params] = useSearchParams();
+    const [id,setId] = useState<string>()
+    useEffect(() => {
+        const paramsId = params.get('id');
+        if (paramsId) {
+            setId(paramsId)
+        }
+    }, [params]);
     const initialValues = task ? {
         ...task,
         dueDate: task.dueDate ? dayjs(task.dueDate) : undefined,

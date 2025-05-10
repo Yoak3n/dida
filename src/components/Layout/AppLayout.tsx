@@ -51,7 +51,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             style={{ insetInlineEnd: 50, position: 'absolute', top: 80 ,height: 50}}
             placement="bottom"
           >
-            <FloatButton icon={<span>📊</span>} tooltip="图表" onClick={() => navigate("/task")}/>
+            <FloatButton icon={<span>📊</span>} tooltip="图表" onClick={() => navigate("/task/")}/>
             <FloatButton icon={<span>⚙️</span>} tooltip="设置" onClick={() => { console.log('FloatButton clicked!') }} />
             <FloatButton icon={<span>◀</span>} tooltip="返回" onClick={() => { navigate(-1)}} />
           </FloatButton.Group>
