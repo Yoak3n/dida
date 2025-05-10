@@ -50,6 +50,8 @@ impl Database {
             conn: RwLock::new(conn),
         })
     }
+
+    
 }
 
 impl ActionManager for Database {

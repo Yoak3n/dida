@@ -1,0 +1,26 @@
+.action-card {
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.action-card:hover {
+    /* border-left: 3px solid #1890ff; */
+    background-color: rgba(24, 144, 255, 0.05);
+}
+
+.action-card .ant-card-head {
+    min-height: 36px;
+    padding: 0 12px;
+}
+
+.action-card .ant-card-head-title {
+    padding: 8px 0;
+}
+
+.action-card .ant-card-extra {
+    padding: 8px 0;
+}
+
+.action-card .ant-card-body {
+    padding: 8px 12px;
+}

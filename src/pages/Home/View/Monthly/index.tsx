@@ -92,7 +92,7 @@ const getListData = (value: Dayjs) => {
 };
 
 
-const Dashboard: React.FC = () => {
+const View: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<any[]>([]);
@@ -213,4 +213,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default View;

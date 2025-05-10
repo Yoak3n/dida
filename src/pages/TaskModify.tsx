@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import { Form, Input, Button, DatePicker, Switch, Card, message, Select } from 'antd';
-import type { Task, Action } from '../types';
-import { invoke } from '@tauri-apps/api/core';
 import dayjs from 'dayjs';
 
+import { invoke } from '@tauri-apps/api/core';
+import type { Task, Action } from '../types';
 interface TaskModifyProps {
     task?: Task;
     onSubmit?: () => void;
@@ -22,6 +23,7 @@ const getActions = async () => {
 const TaskModify: React.FC<TaskModifyProps> = ({ task, onSubmit }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
+    const { id } = useParams();
 
     const initialValues = task ? {
         ...task,
@@ -58,7 +60,7 @@ const TaskModify: React.FC<TaskModifyProps> = ({ task, onSubmit }) => {
     return (
         <>
             {contextHolder}
-            <Card title={task ? "编辑任务" : "创建任务"}>
+            <Card title={id ? "编辑任务" : "创建任务"}>
                 <Form
                     form={form}
                     layout="vertical"

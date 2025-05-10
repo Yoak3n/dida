@@ -41,10 +41,9 @@ const CustomFooter: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const currentPath = location.pathname;
-    console.log('currentPath', currentPath);
     const navItems = [
-        { key: '/dashboard', icon: <HomeOutlined />, label: '首页' },
-        { key: '/action-modify', icon: <AppstoreOutlined />, label: '视图' },
+        { key: '/view/', icon: <HomeOutlined />, label: '首页' },
+        { key: '/dashboard', icon: <AppstoreOutlined />, label: '视图' },
         { key: '/settings', icon: <SettingOutlined />, label: '设置' },
       ];
     return (

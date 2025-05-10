@@ -8,7 +8,7 @@ const Home: React.FC = () => {
         // 手动重定向
         const path = window.location.pathname;
         if (path === "/") {
-            navigate("/dashboard/", { replace: true });
+            navigate("/view/", { replace: true });
         }
     }, []);
     

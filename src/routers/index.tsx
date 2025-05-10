@@ -2,12 +2,14 @@ import { createBrowserRouter } from "react-router-dom";
 import Home from "@/pages/Home";
 
 import Settings from "@/pages/Settings";
-import ActionModify from "@/pages/ActionModify";
-import Dashboard from "@/pages/Home/Dashboard";
+import TaskModify from "@/pages/TaskModify";
 
-import Today from "@/pages/Home/Dashboard/Today";
-import Monthly from "@/pages/Home/Dashboard/Monthly";
-import Weekly from "@/pages/Home/Dashboard/Weekly";
+import View from "@/pages/Home/View";
+import Dashboard from "@/pages/Home/Dashboard"
+import Today from "@/pages/Home/View/Today";
+import Monthly from "@/pages/Home/View/Monthly";
+import Weekly from "@/pages/Home/View/Weekly";
+
 const router = createBrowserRouter(
     [
         {
@@ -15,8 +17,8 @@ const router = createBrowserRouter(
             element: <Home />,
             children: [
                 {
-                    path: "/dashboard",
-                    element: <Dashboard />,
+                    path: "/view",
+                    element: <View />,
                     children: [
                         {
                             index: true,
@@ -30,16 +32,16 @@ const router = createBrowserRouter(
                         }
                     ]
                 },{
-                    path: "/action-modify",
-                    element: <ActionModify />,
-                },{
                     path: "/settings",
                     element: <Settings/>,
+                },{
+                    path: "/dashboard",
+                    element: <Dashboard/>,
                 }
             ],
         },{
-            path: "/a",
-            element: <Today />
+            path: "/task/:id",
+            element: <TaskModify />
         },{
             path: "*",
             element: <div>404 Not Found</div>,
